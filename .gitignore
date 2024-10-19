@@ -1,5 +1,7 @@
-/venv
+venv/
 .env
 .vs/
 .env.sample
-/node_modules
+node_modules/
+staticfiles/
+dist/
