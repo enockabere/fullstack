@@ -1,0 +1,601 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+Leave Request
+{% endblock %}
+
+{% block main %}
+<section class="section">
+    {% include 'alerts.html' %}
+    <div class="section-header">
+        <h1>My Leave Applications <i class="fas fa-folder-open inside-icon"></i></h1>
+        <div class="section-header-breadcrumb">
+            <div class="breadcrumb-item active"><a href="{% url 'dashboard' %}">Dashboard</a></div>
+            <div class="breadcrumb-item active"><a href="{% url 'NewLeave' %}">New Application</a></div>
+            <div class="breadcrumb-item">My Leave Applications</div>
+        </div>
+    </div>
+    <div class="section-body bg-white p-2">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#home2" role="tab"
+                                    aria-controls="home" aria-selected="true">Open ({{res|length}})</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="profile-tab2" data-toggle="tab" href="#profile2" role="tab"
+                                    aria-controls="profile" aria-selected="false">Pending Approval
+                                    ({{pending|length}})</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="contact-tab2" data-toggle="tab" href="#contact2" role="tab"
+                                    aria-controls="contact" aria-selected="false">Approved ({{response|length}})</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="rejected-tab" data-toggle="tab" href="#rejected" role="tab"
+                                    aria-controls="reject" aria-selected="false">Rejected ({{rejected|length}})</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content tab-bordered" id="myTab3Content">
+                            <div class="tab-pane fade show active" id="home2" role="tabpanel"
+                                aria-labelledby="home-tab2">
+                                <div class="table-responsive">
+                                    <table class="table table-striped" id="table-2">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-center">
+                                                    Leave No.
+                                                </th>
+                                                <th>Application Date</th>
+                                                <th>Leave Type</th>
+                                                <th>Start Date</th>
+                                                <th>Resumption Date</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for res in res %}
+                                            <tr>
+                                                <td>{{res.Application_No}}</td>
+                                                <td id="Open_Application_Date{{res.Application_No}}">
+                                                    {{res.Application_Date}}</td>
+                                                <td>{{res.Leave_Code}}</td>
+                                                <td id="Open_Start_Date{{res.Application_No}}">{{res.Start_Date}}</td>
+                                                <td id="Open_End_Date{{res.Application_No}}">{{res.Resumption_Date}}
+                                                </td>
+                                                <td>
+                                                    <div class="badge badge-info">{{res.Status}}</div>
+                                                </td>
+                                                <td>
+                                                    <a class="btn btn-info btn-action mr-1" data-toggle="modal"
+                                                        data-target="#edit_{{res.Application_No}}"><i
+                                                            class="fas fa-pencil-alt"></i> Edit</a>
+                                                    <a href="{% url 'LeaveDetails' res.Application_No %}"
+                                                        class="btn btn-danger" data-toggle="tooltip"
+                                                        title="View Details"> details </a>
+                                                    <form
+                                                        action="{% url 'FnArchiveLeaveApplication' res.Application_No  %}"
+                                                        method="POST" style="display: inline-block;">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-warning">Archive</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            <div class="modal fade" tabindex="-1" role="dialog"
+                                                id="edit_{{res.Application_No}}">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Edit Leave Application -
+                                                                {{res.Application_No}}</h5>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <form method="post" action="{% url 'NewLeave' %}"
+                                                                novalidate>
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="applicationNo"
+                                                                    value="{{res.Application_No}}">
+                                                                <input type="hidden" name="myAction" value="modify">
+                                                                <div class="row">
+                                                                    <div class="form-group col-6">
+                                                                        <label>Leave Type<span
+                                                                                class="text-danger">*</span></label>
+                                                                        <select class="form-control select2"
+                                                                            name="leaveType"
+                                                                            id="leaveType_{{res.Application_No}}">
+                                                                            {% for leave in leaveTypes %}
+                                                                            <option value="{{leave.Code}}">
+                                                                                {{leave.Description}}</option>
+                                                                            {% endfor %}
+                                                                        </select>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <div class="form-group">
+                                                                            <label>Leave Balance</label>
+                                                                            <input type="text" class="form-control"
+                                                                                id="leaveBalance"
+                                                                                placeholder="{{res.Leave_balance}}"
+                                                                                disabled>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="form-group col-12">
+                                                                        <label class="form-label"> Leave Based on
+                                                                            Planner? <span
+                                                                                class="text-danger">*</span></label>
+                                                                        <select class="form-control"
+                                                                            id="BasedOnPlanner_{{res.Application_No}}"
+                                                                            name="usePlanner" required>
+                                                                            <option value="True"
+                                                                                {% if res.Use_Planner == True %}selected{% endif %}>
+                                                                                Yes</option>
+                                                                            <option value="False"
+                                                                                {% if res.Use_Planner == False %}selected{% endif %}>
+                                                                                No</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row"
+                                                                    id="start-dateRow{{res.Application_No}}"
+                                                                    style="display:none">
+                                                                    <div class="form-group col-12"
+                                                                        id="startDateCol{{res.Application_No}}">
+                                                                        <label for="frist_name">Leave Start
+                                                                            Date</label>
+                                                                        <input type="date" class="form-control"
+                                                                            name="LeaveStartDate"
+                                                                            value="{{res.Start_Date}}"
+                                                                            id="start-date{{res.Application_No}}"
+                                                                            autofocus>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row"
+                                                                    id="plannerStartDateRow{{res.Application_No}}"
+                                                                    style="display:none">
+                                                                    <div class="form-group col-12"
+                                                                        id="planner_col{{res.Application_No}}">
+                                                                        <label class="form-label">Planner Start
+                                                                            Date</label>
+                                                                        <select class="form-control"
+                                                                            id="plannerStartDate{{res.Application_No}}"
+                                                                            name="plannerStartDate">
+                                                                            <option value="0" disabled selected>
+                                                                                --Select--</option>
+                                                                            {% for res in plan %}
+                                                                            <option value="{{res.StartDate}}">
+                                                                                {{res.StartDate}}</option>
+                                                                            {% endfor %}
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row"
+                                                                    id="isReturnSameDayRow{{res.Application_No}}"
+                                                                    style="display:none">
+                                                                    <div class="form-group col-12">
+                                                                        <label for="last_name">Return Same Day <span
+                                                                                class="text-danger">*</span></label>
+                                                                        <select class="form-control select2"
+                                                                            id="isReturnSameDay{{res.Application_No}}"
+                                                                            name="isReturnSameDay" required>
+                                                                            <option value="True"
+                                                                                {% if res.Return_same_day == True %}selected{% endif %}>
+                                                                                Yes</option>
+                                                                            <option value="False"
+                                                                                {% if res.Return_same_day == False %}selected{% endif %}>
+                                                                                No</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row"
+                                                                    id="daysAppliedRow{{res.Application_No}}">
+                                                                    <div class="col-md-12">
+                                                                        <div class="form-group">
+                                                                            <label>Days Applied</label>
+                                                                            <input type="text" class="form-control"
+                                                                                id="daysApplied{{res.Application_No}}"
+                                                                                value="{{res.Days_Applied}}"
+                                                                                name="daysApplied">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row"
+                                                                    id="whichHalfOfDayRow{{res.Application_No}}"
+                                                                    style="display:none;">
+                                                                    <div class="col-md-12">
+                                                                        <div class="form-group">
+                                                                            <label>Half Day Leave Application</label>
+                                                                            <select class="form-control select2"
+                                                                                id="whichHalfOfDay{{res.Application_No}}"
+                                                                                name="whichHalfOfDay" disabled>
+
+                                                                                <option value="1">First half of the day
+                                                                                </option>
+                                                                                <option value="2">Second half of the day
+                                                                                </option>
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group my-2">
+                                                                    <button type="submit"
+                                                                        class="btn btn-info btn-lg btn-block">
+                                                                        Edit Leave
+                                                                    </button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <script>
+                                                $(document).ready(function () {
+
+                                                    var leaveCodeToSelect = "{{res.Leave_Code}}";
+                                                    var leaveTypeSelect = $(
+                                                        "#leaveType_{{res.Application_No}}");
+
+                                                    leaveTypeSelect.find('option').each(function () {
+                                                        if ($(this).val() === leaveCodeToSelect) {
+                                                            $(this).prop('selected', true);
+                                                        }
+                                                    });
+
+                                                    // Function to toggle the visibility of inputs based on "Leave Based on Planner?" select
+                                                    function toggleInputs() {
+                                                        var basedOnPlannerSelect = $(
+                                                            "#BasedOnPlanner_{{res.Application_No}}");
+                                                        var startDateInput = $(
+                                                            "#start-date{{res.Application_No}}");
+                                                        var plannerStartDateSelect = $(
+                                                            "#plannerStartDate{{res.Application_No}}");
+
+                                                        var plannerStartDateRow = $(
+                                                            "#plannerStartDateRow{{res.Application_No}}");
+                                                        var startDateRow = $(
+                                                            "#start-dateRow{{res.Application_No}}");
+
+                                                        var plannerDateToSelect = "{{res.Planner_Start_Date}}";
+
+                                                        var isReturnSameDayRow = $(
+                                                            "#isReturnSameDayRow{{res.Application_No}}");
+
+                                                        var isReturnSameDay = $(
+                                                            "#isReturnSameDay{{res.Application_No}}");
+
+
+                                                        // Check the value of the select and toggle visibility accordingly
+                                                        if (basedOnPlannerSelect.val() === "True") {
+                                                            startDateRow.hide(500);
+                                                            plannerStartDateRow.show(600);
+                                                            plannerStartDateSelect.prop('disabled', false);
+                                                            startDateInput.prop('disabled', true);
+                                                            isReturnSameDayRow.hide(500);
+                                                            isReturnSameDay.prop('disabled', true);
+
+                                                            plannerStartDateSelect.find('option').each(
+                                                                function () {
+                                                                    if ($(this).val() ===
+                                                                        plannerDateToSelect) {
+                                                                        $(this).prop('selected', true);
+                                                                    }
+                                                                });
+                                                        } else {
+                                                            startDateRow.show(600);
+                                                            plannerStartDateRow.hide(500);
+                                                            plannerStartDateSelect.prop('disabled', true);
+                                                            startDateInput.prop('disabled', false);
+                                                            isReturnSameDayRow.show(600);
+                                                            isReturnSameDay.prop('disabled', false);
+                                                        }
+                                                    }
+
+                                                    toggleInputs();
+                                                    $("#BasedOnPlanner_{{res.Application_No}}").change(
+                                                        toggleInputs);
+
+                                                    $('#plannerStartDate{{res.Application_No}}').on("change",
+                                                        function (e) {
+                                                            e.preventDefault()
+                                                            var planner_date = $(
+                                                                '#plannerStartDate{{res.Application_No}}'
+                                                            ).val()
+
+                                                            if (planner_date != null) {
+                                                                $.ajax({
+                                                                    type: "get",
+                                                                    url: "/selfservice/NumberOfDaysFilter/",
+                                                                    dataType: "json",
+                                                                    data: {
+                                                                        planner_date: planner_date,
+                                                                    },
+                                                                    success: function (response) {
+                                                                        $('#daysApplied{{res.Application_No}}')
+                                                                            .val(
+                                                                                response)
+                                                                        $('#daysApplied{{res.Application_No}}')
+                                                                            .prop(
+                                                                                "disabled", true
+                                                                            )
+                                                                    },
+                                                                    error: function (response) {
+                                                                        console.log(
+                                                                            "Something went wrong"
+                                                                        )
+                                                                    },
+                                                                })
+                                                            } else {}
+                                                        })
+                                                    var isReturnSameDay_value = "{{res.Return_same_day}}";
+                                                    if (isReturnSameDay_value === "True") {
+                                                        $('#daysAppliedRow{{res.Application_No}}')
+                                                            .hide();
+                                                        $('#daysApplied{{res.Application_No}}')
+                                                            .prop('disabled', true);
+                                                        $('#whichHalfOfDayRow{{res.Application_No}}')
+                                                            .show()
+                                                        $('#whichHalfOfDay{{res.Application_No}}')
+                                                            .prop('disabled', false)
+                                                    } else {
+                                                        $('#daysAppliedRow{{res.Application_No}}')
+                                                            .show();
+                                                        $('#daysApplied{{res.Application_No}}')
+                                                            .prop('disabled', false);
+                                                        $('#whichHalfOfDayRow{{res.Application_No}}')
+                                                            .hide()
+                                                        $('#whichHalfOfDay{{res.Application_No}}')
+                                                            .prop('disabled', true)
+                                                    }
+                                                    $('#isReturnSameDay{{res.Application_No}}').on("change",
+                                                        function (e) {
+                                                            e.preventDefault()
+                                                            var isReturn_value = $(
+                                                                '#isReturnSameDay{{res.Application_No}}'
+                                                            ).val()
+
+                                                            if (isReturn_value != null) {
+
+                                                                if (isReturn_value === 'True') {
+                                                                    $('#daysAppliedRow{{res.Application_No}}')
+                                                                        .hide(500);
+                                                                    $('#daysApplied{{res.Application_No}}')
+                                                                        .prop('disabled', true);
+                                                                    $('#whichHalfOfDayRow{{res.Application_No}}')
+                                                                        .show(600)
+                                                                    $('#whichHalfOfDay{{res.Application_No}}')
+                                                                        .prop('disabled', false)
+                                                                } else if (isReturn_value === "False") {
+                                                                    $('#daysAppliedRow{{res.Application_No}}')
+                                                                        .show(600);
+                                                                    $('#daysApplied{{res.Application_No}}')
+                                                                        .prop('disabled', false);
+                                                                    $('#whichHalfOfDayRow{{res.Application_No}}')
+                                                                        .hide(500)
+                                                                    $('#whichHalfOfDay{{res.Application_No}}')
+                                                                        .prop('disabled', true)
+                                                                }
+
+                                                            } else {}
+                                                        })
+                                                    $("#Open_Application_Date{{res.Application_No}}")
+                                                        .empty().append(moment(
+                                                                '{{res.Application_Date}}', "YYYY-MM-DD")
+                                                            .format(
+                                                                'Do MMM YYYY'));
+                                                    $("#Open_Start_Date{{res.Application_No}}")
+                                                        .empty().append(moment(
+                                                                '{{res.Start_Date}}', "YYYY-MM-DD")
+                                                            .format(
+                                                                'Do MMM YYYY'));
+                                                    $("#Open_End_Date{{res.Application_No}}")
+                                                        .empty().append(moment(
+                                                                '{{res.Resumption_Date}}', "YYYY-MM-DD")
+                                                            .format(
+                                                                'Do MMM YYYY'));
+                                                })
+                                            </script>
+
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="profile2" role="tabpanel" aria-labelledby="profile-tab2">
+                                <div class="table-responsive">
+                                    <table class="table table-striped" id="table-1">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-center">
+                                                    Leave No.
+                                                </th>
+                                                <th>Application Date</th>
+                                                <th>Leave Type</th>
+                                                <th>Start Date</th>
+                                                <th>Resumption Date</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for res in pending %}
+                                            <tr>
+                                                <td>{{res.Application_No}}</td>
+                                                <td id="Pending_Application_Date{{res.Application_No}}">
+                                                    {{res.Application_Date}}</td>
+                                                <td>{{res.Leave_Code}}</td>
+                                                <td id="Pending_Start_Date{{res.Application_No}}">{{res.Start_Date}}
+                                                </td>
+                                                <td id="Pending_End_Date{{res.Application_No}}">{{res.Resumption_Date}}
+                                                </td>
+                                                <td>
+                                                    <div class="badge badge-warning">{{res.Status}}</div>
+                                                </td>
+                                                <td>
+
+                                                    <a href="{% url 'LeaveDetails' res.Application_No %}"
+                                                        class="btn btn-danger" data-toggle="tooltip"
+                                                        title="View Details"> details </a>
+                                                </td>
+                                            </tr>
+                                            <script>
+                                                $(document).ready(function () {
+                                                    $("#Pending_Application_Date{{res.Application_No}}")
+                                                        .empty().append(moment(
+                                                                '{{res.Application_Date}}', "YYYY-MM-DD")
+                                                            .format(
+                                                                'Do MMM YYYY'));
+                                                    $("#Pending_Start_Date{{res.Application_No}}")
+                                                        .empty().append(moment(
+                                                                '{{res.Start_Date}}', "YYYY-MM-DD")
+                                                            .format(
+                                                                'Do MMM YYYY'));
+                                                    $("#Pending_End_Date{{res.Application_No}}")
+                                                        .empty().append(moment(
+                                                                '{{res.Resumption_Date}}', "YYYY-MM-DD")
+                                                            .format(
+                                                                'Do MMM YYYY'));
+                                                })
+                                            </script>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="contact2" role="tabpanel" aria-labelledby="contact-tab2">
+                                <div class="table-responsive">
+                                    <table class="table table-striped data-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-center">
+                                                    Leave No.
+                                                </th>
+                                                <th>Application Date</th>
+                                                <th>Leave Type</th>
+                                                <th>Start Date</th>
+                                                <th>Resumption Date</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for res in response %}
+                                            <tr>
+                                                <td>{{res.Application_No}}</td>
+                                                <td id="Approved_Application_Date{{res.Application_No}}">
+                                                    {{res.Application_Date}}</td>
+                                                <td>{{res.Leave_Code}}</td>
+                                                <td id="Approved_Start_Date{{res.Application_No}}">{{res.Start_Date}}
+                                                </td>
+                                                <td id="Approved_End_Date{{res.Application_No}}">{{res.Resumption_Date}}
+                                                </td>
+                                                <td>
+                                                    <div class="badge badge-success">{{res.Status}}</div>
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'LeaveDetails' res.Application_No %}"
+                                                        class="btn btn-danger" data-toggle="tooltip"
+                                                        title="View Details"> details </a>
+                                                </td>
+                                            </tr>
+                                            <script>
+                                                $(document).ready(function () {
+                                                    $("#Approved_Application_Date{{res.Application_No}}")
+                                                        .empty().append(moment(
+                                                                '{{res.Application_Date}}', "YYYY-MM-DD")
+                                                            .format(
+                                                                'Do MMM YYYY'));
+                                                    $("#Approved_Start_Date{{res.Application_No}}")
+                                                        .empty().append(moment(
+                                                                '{{res.Start_Date}}', "YYYY-MM-DD")
+                                                            .format(
+                                                                'Do MMM YYYY'));
+                                                    $("#Approved_End_Date{{res.Application_No}}")
+                                                        .empty().append(moment(
+                                                                '{{res.Resumption_Date}}', "YYYY-MM-DD")
+                                                            .format(
+                                                                'Do MMM YYYY'));
+                                                })
+                                            </script>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="rejected" role="tabpanel" aria-labelledby="rejected-tab">
+                                <div class="table-responsive">
+                                    <table class="table table-striped data-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-center">
+                                                    Leave No.
+                                                </th>
+                                                <th>Application Date</th>
+                                                <th>Leave Type</th>
+                                                <th>Start Date</th>
+                                                <th>Resumption Date</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for res in rejected %}
+                                            <tr>
+                                                <td>{{res.Application_No}}</td>
+                                                <td id="Rejected_Application_Date{{res.Application_No}}">
+                                                    {{res.Application_Date}}</td>
+                                                <td>{{res.Leave_Code}}</td>
+                                                <td id="Rejected_Start_Date{{res.Application_No}}">{{res.Start_Date}}
+                                                </td>
+                                                <td id="Rejected_End_Date{{res.Application_No}}">{{res.Resumption_Date}}
+                                                </td>
+                                                <td>
+                                                    <div class="badge badge-danger">{{res.Status}}</div>
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'LeaveDetails' res.Application_No %}"
+                                                        class="btn btn-danger" data-toggle="tooltip"
+                                                        title="View Details"> details </a>
+                                                </td>
+                                            </tr>
+                                            <script>
+                                                $(document).ready(function () {
+                                                    $("#Rejected_Application_Date{{res.Application_No}}")
+                                                        .empty().append(moment(
+                                                                '{{res.Application_Date}}', "YYYY-MM-DD")
+                                                            .format(
+                                                                'Do MMM YYYY'));
+                                                    $("#Rejected_Start_Date{{res.Application_No}}")
+                                                        .empty().append(moment(
+                                                                '{{res.Start_Date}}', "YYYY-MM-DD")
+                                                            .format(
+                                                                'Do MMM YYYY'));
+                                                    $("#Rejected_End_Date{{res.Application_No}}")
+                                                        .empty().append(moment(
+                                                                '{{res.Resumption_Date}}', "YYYY-MM-DD")
+                                                            .format(
+                                                                'Do MMM YYYY'));
+                                                })
+                                            </script>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    $(document).ready(function () {
+
+    })
+</script>
+{% endblock %}

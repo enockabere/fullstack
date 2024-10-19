@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}
+Leave Reports
+{% endblock %}
+
+{% block main %}
+<section class="section">
+    {% include 'alerts.html' %}
+    <div class="section-header">
+        <h1>Leave Reports <i class="fas fa-folder inside-icon"></i></h1>
+        <div class="section-header-breadcrumb">
+            <div class="breadcrumb-item active"><a href="{% url 'dashboard' %}">Dashboard</a></div>
+            <div class="breadcrumb-item">Leave Reports</div>
+        </div>
+    </div>
+    <div class="section-body bg-white p-2">
+        <div class="row" id="header_step">
+            <div class="col-md-12">
+                <div class="card-body">
+                    <form method="POST" action="{% url 'LeaveReports' %}" id="myForm" novalidate class="pb-5">
+                        {% csrf_token %}
+                        <input type="hidden" name="prospNo" value="">
+                        <input type="hidden" name="myAction" value="insert">
+                        <div class="row">
+                            <div class="form-group col-12">
+                                <label>Report Type<span class="text-danger">*</span></label>
+                                <select class="form-control select2" id="document_type" name="document_type" required>
+                                    <option selected disabled value="0">--select--</option>
+                                    <option value="1">Leave Statement Report</option>
+                                    <option value="2">Leave Report</option>
+                                    <option value="3">Leave Summary Report</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row" id="documentIDRow" style="display:none;">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="last_name"> Leave Document <span class="text-danger">*</span></label>
+                                    <select class="form-control select2" name="documentID" id="documentID" required>
+                                        <option value="0" disabled selected>--Select--</option>
+                                        {% for leave in approvedLeave %}
+                                        <option value="{{leave.Application_No}}">Start Date ({{leave.Start_Date}}) -
+                                            Resumption Date ({{leave.Resumption_Date}} )
+                                        </option>
+                                        {% empty %}
+                                        <option disabled value="0">You have not taken any leave</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" id="leaveTypeRow" style="display:none;">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Leave Type<span class="text-danger">*</span></label>
+                                    <select class="form-control select2" name="leaveType" id="leaveType" disabled>
+                                        <option selected value="">--Select--</option>
+                                        {% for res in leave %}
+                                        <option value="{{res.Code}}">{{res.Description}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3 pb-5">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary btn-lg btn-block">
+                                    Preview Report
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</section>
+<script>
+    $(document).ready(function () {
+        $('#document_type').on('change', function () {
+            if (this.value == '1') {
+                $('#documentIDRow').hide(500);
+                $('#documentID').prop('disabled', true);
+                $('#leaveTypeRow').show(800);
+                $('#leaveType').prop('disabled', false);
+            } else if (this.value == '2') {
+                $('#documentIDRow').show(800);
+                $('#documentID').prop('disabled', false);
+                $('#leaveTypeRow').hide(500);
+                $('#leaveType').prop('disabled', true);
+            } else {
+                $('#documentIDRow').hide(500);
+                $('#documentID').prop('disabled', true);
+                $('#leaveTypeRow').hide(500);
+                $('#leaveType').prop('disabled', true);
+            }
+        });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+DASHBOARD
+{% endblock %}
+{% block head %}
+<script src="{% static 'plugins/assets/modules/chart.min.js' %}"></script>
+{% endblock %}
+
+
+{% block main %}
+<section class="section">
+    {% include 'alerts.html' %}
+    <div class="section-body">
+        {% if res|length > 0 %}
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="hero text-white" style="background: #17202A;">
+                    <div class="hero-inner">
+                        <h2><span id="greeting"></span>, {{username}}</h2>
+                        <p class="lead">
+                            <strong class="text-bold text-warning">Reminder:</strong> You currently have
+                            {{res|length}}
+                            open leave
+                            documents
+                            awaiting approval
+                            in our system. To ensure a smooth workflow and timely processing, please take a moment to
+                            review and send them for approval at your earliest convenience.
+
+                            Your attention to this matter is greatly appreciated. If you have any questions or need
+                            assistance, please feel free to reach out to our support team.
+
+                            Thank you for your cooperation!
+                        </p>
+                        <div class="mt-4">
+                            <a href="{% url 'Applications' %}"
+                                class="btn btn-outline-white btn-lg btn-icon icon-left"><i class="far fa-eye"></i> View
+                                All Applications</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Leave Statistics</h4>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="myChart" height="100"></canvas>
+                        <div class="statistic-details mt-sm-4">
+                            <div class="statistic-details-item">
+                                <div class="detail-value"> <span id="annual_balance">0</span> Days</div>
+                                <div class="detail-name">Annual Leave Balance</div>
+                            </div>
+                            <div class="statistic-details-item">
+                                <div class="detail-value"><span id="max_overdraft">0</span> Days</div>
+                                <div class="detail-name">Available Max Overdraft Days</div>
+                            </div>
+                            <div class="statistic-details-item">
+                                <div class="detail-value"><span id="leave_earned">0</span> Days</div>
+                                <div class="detail-name">Leave Earned to Date</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="row g-1">
+                    <div class="col-md-6">
+                        <div class="card-box bg-blue h-100">
+                            <div class="inner">
+                                <h3> {{res|length}} </h3>
+                                <p> Open Leave Requests</p>
+                            </div>
+                            <a href="{% url 'NewLeave' %}" class="card-box-footer">New Request <i
+                                    class="las la-plus"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card-box bg-warning h-100">
+                            <div class="inner">
+                                <h3> {{pending|length}} </h3>
+                                <p> Leave Requests Pending Approval </p>
+                            </div>
+                            {% if pending|length > 0  %}
+                            <a href="{% url 'Applications' %}" class="card-box-footer">View All <i
+                                    class="las la-arrow-circle-right"></i></a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4 g-1">
+                    <div class="col-md-6">
+                        <div class="card-box bg-green h-100">
+                            <div class="inner">
+                                <h3> {{response|length}} </h3>
+                                <p> Approved Leave Requests</p>
+                            </div>
+                            {% if response|length > 0  %}
+                            <a href="{% url 'Applications' %}" class="card-box-footer">View All <i
+                                    class="las la-arrow-circle-right"></i></a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card-box bg-color1 h-100">
+                            <div class="inner">
+                                <h3> {{rejected|length}} </h3>
+                                <p> Rejected Leave Requests</p>
+                            </div>
+                            {% if rejected|length > 0  %}
+                            <a href="{% url 'Applications' %}" class="card-box-footer">View All <i
+                                    class="las la-arrow-circle-right"></i></a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</section>
+<script>
+    function getGreeting() {
+        const currentTime = new Date();
+        const options = {
+            timeZone: 'Africa/Nairobi'
+        }; // Set the time zone to East Africa Time
+
+        const formattedTime = currentTime.toLocaleTimeString('en-US', options);
+        const currentHour = parseInt(formattedTime.split(':')[0]);
+
+        let greeting;
+
+        if (currentHour < 12) {
+            greeting = "Good morning!";
+        } else if (currentHour < 18) {
+            greeting = "Good afternoon!";
+        } else {
+            greeting = "Good evening!";
+        }
+
+        return greeting;
+    }
+
+    function updateGreeting() {
+        const greeting = getGreeting();
+        document.getElementById("greeting").textContent = greeting;
+    }
+
+    updateGreeting();
+
+    setInterval(updateGreeting, 60000);
+</script>
+<script src="{% static 'js/landing_chart.js' %}"></script>
+{% endblock %}

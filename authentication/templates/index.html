@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> ESS Login &mdash; MWA</title>
+
+  <!-- Google font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;600;700;800;900&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,500,500i,700,700i,900&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'plugins/assets/css/font-awesome.css' %}">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <link rel="stylesheet" href="{% static 'plugins/assets/css/vendors/bootstrap.css' %}">
+  <link rel="stylesheet" href="{% static 'plugins/assets/css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'plugins/assets/css/responsive.css' %}">
+  <link rel="shortcut icon" type="image/png" href="{% static 'img/logo/favicon.jpg' %}" />
+
+<body class="container-fluid p-0">
+  <div class="app" id="root">
+    <script src="{% static 'frontend/bundle.js' %}"></script>
+    <script src="{% static 'plugins/assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'plugins/assets/js/bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'plugins/assets/js/icons/feather-icon/feather.min.js' %}"></script>
+    <script src="{% static 'plugins/assets/js/icons/feather-icon/feather-icon.js' %}"></script>
+   
+
+  </div>
+</body>
+
+</html>

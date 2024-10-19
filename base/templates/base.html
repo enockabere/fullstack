@@ -1,0 +1,369 @@
+<!-- @format -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport" />
+  <title>MWA ESS {% block title %}{% endblock %}</title>
+
+  <script src="{% static 'js/simplebar-simplebar.min.js' %}"></script>
+  <script src="{% static 'js/js-config.js' %}"></script>
+  <script>
+    document.documentElement.classList.add("navbar-horizontal");
+  </script>
+
+  <!-- General CSS Files -->
+  <link rel="stylesheet" href="{% static 'plugins/assets/modules/bootstrap/css/bootstrap.min.css' %}" />
+  <link rel="stylesheet" href="{% static 'plugins/assets/modules/fontawesome/css/all.min.css' %}" />
+  <!-- CSS Data tables -->
+  <link rel="stylesheet" href="{% static 'plugins/assets/modules/datatables/datatables.min.css' %}" />
+  <link rel="stylesheet"
+    href="{% static 'plugins/assets/modules/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css' %}" />
+  <link rel="stylesheet"
+    href="{% static 'plugins/assets/modules/datatables/Select-1.2.4/css/select.bootstrap4.min.css' %}" />
+  <!-- end -->
+
+  <!-- Template CSS check-->
+  <link rel="stylesheet" href="{% static 'plugins/assets/css/style.css' %}" />
+  <link rel="stylesheet" href="{% static 'plugins/assets/css/components.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/index.css' %}" />
+  <link rel="stylesheet" href="{% static 'plugins/assets/modules/prism/prism.css' %}" />
+  <link rel="stylesheet" href="{% static 'plugins/assets/modules/izitoast/css/iziToast.min.css' %}" />
+  <script src="{% static 'plugins/assets/modules/izitoast/js/iziToast.min.js' %}"></script>
+
+  <link rel="stylesheet" href="{% static 'plugins/assets/modules/summernote/summernote-bs4.css' %}" />
+  <link rel="stylesheet" href="{% static 'plugins/line-awesome-1.3.0/1.3.0/css/line-awesome.min.css' %}" />
+  <link rel="stylesheet" href="{% static 'plugins/assets/modules/fullcalendar/fullcalendar.min.css' %}" />
+
+  <link href="{% static 'css/simplebar-simplebar.min.css' %}" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css" />
+  <link href="{% static 'css/css-theme.min.css' %}" type="text/css" rel="stylesheet" id="style-default" />
+  <link rel="shortcut icon" type="image/png" href="{% static 'img/logo/mwa_logo_color.png' %}" />
+  <script src="{% static 'plugins/assets/modules/jquery.min.js' %}"></script>
+  {% block head %} {% endblock %}
+</head>
+
+<body class="layout-3" style="min-height: 100vh">
+  <div id="app">
+    <div class="main-wrapper container">
+      <div class="navbar-bg"></div>
+      <nav class="navbar navbar-vertical navbar-expand-lg" style="display: none">
+        <script>
+          var navbarStyle = window.config.config.phoenixNavbarStyle;
+          if (navbarStyle && navbarStyle !== "transparent") {
+            document
+              .querySelector("body")
+              .classList.add(`navbar-${navbarStyle}`);
+          }
+        </script>
+      </nav>
+
+      <nav class="navbar navbar-top fixed-top navbar-expand-lg" id="navbarTop" style="display: none">
+        <div class="navbar-logo">
+          <button class="btn navbar-toggler navbar-toggler-humburger-icon hover-bg-transparent" type="button"
+            data-bs-toggle="collapse" data-bs-target="#navbarTopCollapse" aria-controls="navbarTopCollapse"
+            aria-expanded="false" aria-label="Toggle Navigation">
+            <span class="navbar-toggle-icon"><span class="toggle-line"></span></span>
+          </button>
+          <a class="navbar-brand me-1 me-sm-3" href="#">
+            <div class="d-flex align-items-center">
+              <div class="d-flex align-items-center">
+                <img src="{% static 'img/logo/mwa_logo_color.png' %}" alt="MWA" width="100" />
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-top-collapse order-1 order-lg-0 justify-content-center"
+          id="navbarTopCollapse">
+          <ul class="navbar-nav navbar-nav-top" data-dropdown-on-hover="data-dropdown-on-hover">
+            {% if Employee == True %}
+            <li class="nav-item">
+              <a class="nav-link lh-1" href="{% url 'dashboard'%}" role="button" data-bs-auto-close="outside"
+                aria-haspopup="true" aria-expanded="false"><span
+                  class="uil fs-0 me-2 uil-chart-pie"></span>Dashboard</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle lh-1" href="#!" role="button" data-bs-toggle="dropdown"
+                data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false"><span
+                  class="uil fs-0 me-2 uil-puzzle-piece"></span>Human
+                Resource</a>
+              <ul class="dropdown-menu navbar-dropdown-caret">
+                <li class="dropdown">
+                  <a class="dropdown-item dropdown-toggle" id="CRM" href="#" data-bs-toggle="dropdown"
+                    data-bs-auto-close="outside">
+                    <div class="dropdown-item-wrapper">
+                      <span class="uil fs-0 uil-angle-right lh-1 dropdown-indicator-icon"></span><span><span
+                          class="me-2 uil" data-feather="phone"></span>Leave Planner</span>
+                    </div>
+                  </a>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <a class="dropdown-item" href="{% url 'LeavePlanner' %}">
+                        <div class="dropdown-item-wrapper">
+                          <span class="me-2 uil"></span>New Leave Planner
+                        </div>
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{% url 'MyPlans' %}">
+                        <div class="dropdown-item-wrapper">
+                          <span class="me-2 uil"></span>My Plans
+                        </div>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+                <li class="dropdown">
+                  <a class="dropdown-item dropdown-toggle" id="project-management" href="#" data-bs-toggle="dropdown"
+                    data-bs-auto-close="outside">
+                    <div class="dropdown-item-wrapper">
+                      <span class="uil fs-0 uil-angle-right lh-1 dropdown-indicator-icon"></span><span><span
+                          class="me-2 uil" data-feather="clipboard"></span>Leave Request</span>
+                    </div>
+                  </a>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <a class="dropdown-item" href="{% url 'LeaveDashboard' %}">
+                        <div class="dropdown-item-wrapper">
+                          <span class="me-2 uil"></span> Leave Dashboard
+                        </div>
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{% url 'NewLeave' %}">
+                        <div class="dropdown-item-wrapper">
+                          <span class="me-2 uil"></span>New Leave Request
+                        </div>
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{% url 'Applications' %}">
+                        <div class="dropdown-item-wrapper">
+                          <span class="me-2 uil"></span>My Leave Applications
+                        </div>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+                <li class="dropdown">
+                  <a class="dropdown-item dropdown-toggle" id="email" href="#" data-bs-toggle="dropdown"
+                    data-bs-auto-close="outside">
+                    <div class="dropdown-item-wrapper">
+                      <span class="uil fs-0 uil-angle-right lh-1 dropdown-indicator-icon"></span><span><span
+                          class="me-2 uil" data-feather="mail"></span>Leave Adjustments</span>
+                    </div>
+                  </a>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <a class="dropdown-item" href="{% url 'LeaveAdjustments' %}">
+                        <div class="dropdown-item-wrapper">
+                          <span class="me-2 uil"></span>New Adjustment
+                        </div>
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{% url 'MyAdjustments' %}">
+                        <div class="dropdown-item-wrapper">
+                          <span class="me-2 uil"></span>My Adjustments
+                        </div>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'LeaveReports' %}">
+                    <div class="dropdown-item-wrapper">
+                      <span class="me-2 uil" data-feather="calendar"></span>Leave Reports
+                    </div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            {% endif %}
+            <li class="nav-item">
+              <a class="nav-link lh-1" href="{% url 'Approval' %}" role="button" data-bs-auto-close="outside"
+                aria-haspopup="true" aria-expanded="false"><span
+                  class="uil fs-0 me-2 uil-files-landscapes-alt"></span>Approvals ({{open_approvals|length}})</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link lh-1" href="{% url 'LeaveBalances' %}" role="button" data-bs-auto-close="outside"
+                aria-haspopup="true" aria-expanded="false"><span class="uil fs-0 me-2 uil-calculator"></span>Leave
+                Balances
+              </a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle lh-1" href="#!" role="button" data-bs-toggle="dropdown"
+                data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false"><span
+                  class="uil fs-0 me-2 uil-document-layout-right"></span>Documentation</a>
+              <ul class="dropdown-menu navbar-dropdown-caret">
+                <li>
+                  <a class="dropdown-item" href="{% url 'Documentation' %}">
+                    <div class="dropdown-item-wrapper">
+                      <span class="me-2 uil" data-feather="life-buoy"></span>View
+                    </div>
+                  </a>
+                </li>
+                <!-- <li><a class="dropdown-item" href="#">
+                                        <div class="dropdown-item-wrapper"><span class="me-2 uil"
+                                                data-feather="git-merge"></span>Changelog
+                                        </div>
+                                    </a></li> -->
+                <li>
+                  <a class="dropdown-item"
+                    href="{% static 'manual/MSF Leave Management Portal Documentation.docx.pdf' %}"
+                    download="ESS_Manual">
+                    <div class="dropdown-item-wrapper">
+                      <span class="me-2 uil" data-feather="life-buoy"></span>Download
+                    </div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <ul class="navbar-nav navbar-nav-icons flex-row">
+          <li class="nav-item dropdown">
+            <a class="nav-link" id="navbarDropdownNindeDots" href="#" role="button" data-bs-toggle="dropdown"
+              aria-haspopup="true" data-bs-auto-close="outside" aria-expanded="false"><svg width="16" height="16"
+                viewbox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="2" cy="2" r="2" fill="currentColor"></circle>
+                <circle cx="2" cy="8" r="2" fill="currentColor"></circle>
+                <circle cx="2" cy="14" r="2" fill="currentColor"></circle>
+                <circle cx="8" cy="8" r="2" fill="currentColor"></circle>
+                <circle cx="8" cy="14" r="2" fill="currentColor"></circle>
+                <circle cx="14" cy="8" r="2" fill="currentColor"></circle>
+                <circle cx="14" cy="14" r="2" fill="currentColor"></circle>
+                <circle cx="8" cy="2" r="2" fill="currentColor"></circle>
+                <circle cx="14" cy="2" r="2" fill="currentColor"></circle>
+              </svg></a>
+            <div
+              class="dropdown-menu dropdown-menu-end navbar-dropdown-caret py-0 dropdown-nide-dots shadow border border-300"
+              aria-labelledby="navbarDropdownNindeDots">
+              <div class="card bg-white position-relative border-0">
+                <div class="card-body pt-3 px-3 pb-0 overflow-auto scrollbar" style="height: 20rem">
+                  <div class="row text-center align-items-center gx-0 gy-0">
+                    <div class="col-8">
+                      <a class="d-block hover-bg-200 p-2 rounded-3 text-center text-decoration-none mb-3"
+                        href="https://msfea.samanage.com/welcome.portal" target="_blank"><img
+                          src="{% static 'img/logo/l4.jpeg' %}" alt="" width="30" />
+                        <p class="mb-0 text-black mt-1 pt-1">
+                          Service Request
+                        </p>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link lh-1 pe-0" id="navbarDropdownUser" href="#!" role="button" data-bs-toggle="dropdown"
+              data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
+              <div class="avatar avatar-l">
+                <img class="rounded-circle" src="{% static 'img/logo/pp.png' %}" alt="" />
+              </div>
+            </a>
+            <div
+              class="dropdown-menu dropdown-menu-end navbar-dropdown-caret py-0 dropdown-profile shadow border border-300"
+              aria-labelledby="navbarDropdownUser">
+              <div class="card position-relative border-0">
+                <div class="card-body p-0">
+                  <div class="text-center pt-4 pb-3">
+                    <div class="avatar avatar-xl">
+                      <img class="rounded-circle" src="{% static 'img/logo/pp.png' %}" alt="" />
+                    </div>
+                    <h6 class="mt-2 text-black">{{username}}</h6>
+                  </div>
+                  <div class="mb-3 mx-3">
+                    <input class="form-control form-control-sm" id="statusUpdateInput" type="text"
+                      placeholder="Update your status" />
+                  </div>
+                </div>
+                <div class="overflow-auto scrollbar" style="height: 10rem">
+                  <ul class="nav d-flex flex-column mb-2 pb-1">
+                    <li class="nav-item">
+                      <a class="nav-link px-3" href="{% url 'Profile' %}">
+                        <span class="me-2 text-900" data-feather="user"></span><span>Profile</span></a>
+                    </li>
+                    {% if Employee == True %}
+                    <li class="nav-item">
+                      <a class="nav-link px-3" href="{% url 'dashboard' %}"><span class="me-2 text-900"
+                          data-feather="pie-chart"></span>Dashboard</a>
+                    </li>
+                    {% endif %}
+                    <!-- <li class="nav-item"><a class="nav-link px-3" href="#!"> <span
+                                                    class="me-2 text-900" data-feather="settings"></span>Settings
+                                                &amp; Privacy </a></li>
+                                        <li class="nav-item"><a class="nav-link px-3" href="#!"> <span
+                                                    class="me-2 text-900" data-feather="help-circle"></span>Help
+                                                Center</a></li> -->
+                  </ul>
+                </div>
+                <div class="card-footer p-0 border-top">
+                  <div class="px-3">
+                    <a class="btn btn-phoenix-secondary d-flex flex-center w-100" href="{% url 'logout' %}">
+                      <span data-feather="log-out"> </span>Sign out</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </nav>
+      <script>
+        var navbarVertical = document.querySelector(".navbar-vertical");
+        navbarVertical.remove();
+        navbarTop.removeAttribute("style");
+      </script>
+
+      <!-- Main Content -->
+      <div class="main-content">{% block main %} {% endblock %}</div>
+    </div>
+  </div>
+
+  <!-- General JS Scripts -->
+  <script src="{% static 'plugins/assets/modules/popper.js' %}"></script>
+  <script src="{% static 'plugins/assets/modules/tooltip.js' %}"></script>
+  <script src="{% static 'plugins/assets/modules/bootstrap/js/bootstrap.min.js' %}"></script>
+  <script src="{% static 'plugins/assets/modules/nicescroll/jquery.nicescroll.min.js' %}"></script>
+  <script src="{% static 'plugins/assets/modules/moment.min.js' %}"></script>
+  <script src="{% static 'plugins/assets/js/stisla.js' %}"></script>
+
+  <!-- Page Specific JS File -->
+  <!-- JS Libraies -->
+  <script src="{% static 'plugins/assets/modules/datatables/datatables.min.js' %}"></script>
+  <script src="{% static 'plugins/assets/modules/datatables/DataTables-1.10.16/js/dataTables.bootstrap4.min.js' %}">
+  </script>
+  <script src="{% static 'plugins/assets/modules/datatables/Select-1.2.4/js/dataTables.select.min.js' %}"></script>
+  <script src="{% static 'plugins/assets/modules/jquery-ui/jquery-ui.min.js' %}"></script>
+  <!-- JS Libraies -->
+  <script src="{% static 'plugins/assets/modules/prism/prism.js' %}"></script>
+
+  <!-- Page Specific JS File -->
+  <script src="{% static 'plugins/assets/js/page/bootstrap-modal.js' %}"></script>
+
+  <!-- Page Specific JS File -->
+  <script src="{% static 'plugins/assets/js/page/modules-datatables.js' %}"></script>
+  <script src="{% static 'plugins/assets/modules/summernote/summernote-bs4.js' %}"></script>
+
+  <!-- Template JS File -->
+  <script src="{% static 'plugins/assets/js/scripts.js' %}"></script>
+  <script src="{% static 'plugins/assets/js/custom.js' %}"></script>
+
+  <script src="{% static 'js/popper-popper.min.js' %}"></script>
+  <script src="{% static 'js/bootstrap-bootstrap.min.js' %}"></script>
+  <script src="{% static 'js/anchorjs-anchor.min.js' %}"></script>
+  <script src="{% static 'js/is-is.min.js' %}"></script>
+  <script src="{% static 'js/lodash-lodash.min.js' %}"></script>
+  <script src="{% static 'js/js-phoenix.js' %}"></script>
+  <script>
+    $(document).ready(function () {
+      const currentYear = new Date().getFullYear();
+      $("#currentYear").empty().append(currentYear);
+    });
+  </script>
+</body>
+
+</html>

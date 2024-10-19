@@ -1,0 +1,496 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+Leave {{response.ID}}
+{% endblock %}
+{% block head %}
+<style>
+    .accordion-header[aria-expanded="true"] .accordion-icon i:before {
+        content: "\f068";
+    }
+
+    .left-align {
+        text-align: left;
+    }
+
+    .right-align {
+        text-align: right;
+    }
+
+    .p-4 {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .controlBtn {
+        display: flex;
+        justify-content: center;
+    }
+
+    .button-container {
+        display: flex;
+    }
+
+    .button-container>form,
+    .button-container>button {
+        margin-right: 5px;
+        /* Adjust this value to control the space between the buttons */
+    }
+
+    /* Adjust the margin-right for the last button to remove the extra space */
+    .button-container>form:last-child,
+    .button-container>button:last-child {
+        margin-right: 0;
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+{% include 'alerts.html' %}
+<section>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mb-3">
+                    <div
+                        class="p-4 text-white text-lg {% if res.Status == 'Open' %} bg-dark {% elif res.Status == 'Pending Approval' %}bg-warning{% elif res.Status == 'Released' %}bg-green{% elif res.Status == 'Rejected' %}bg-danger{% endif %} rounded-top">
+                        <h2 class="left-align">Leave Adjustment Details</h2>
+                        <p class="right-align text-uppercase">Reference No - <span
+                                class="text-medium">{{res.Code}}</span></p>
+                    </div>
+                    <div class="d-flex flex-wrap flex-sm-nowrap justify-content-between py-3 px-2 bg-secondary">
+                        <div class="w-100 text-center py-1 px-2"><span class="text-medium font-weight-bold">Code:
+                            </span>{{res.Code}}
+                        </div>
+                        <div class="w-100 text-center py-1 px-2"><span class="text-medium font-weight-bold">
+                                Status:</span> {{res.Status}}
+                        </div>
+                        <div class="w-100 text-center py-1 px-2"><span class="text-medium font-weight-bold">Transaction
+                                Type:
+                            </span>{{res.TransactionType}}
+                        </div>
+
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="accordion">
+                                    <div class="accordion">
+                                        <div class="accordion-header {% if res.Status == 'Open' %} bg-dark {% elif res.Status == 'Pending Approval' %}bg-warning{% elif res.Status == 'Released' %}bg-green{% elif res.Status == 'Rejected' %}bg-danger{% endif %}"
+                                            role="button" data-toggle="collapse" data-target="#panel-body-1"
+                                            aria-expanded="true">
+                                            <h4>
+                                                <span class="accordion-icon"><i class="fas fa-plus"></i></span>
+                                                Application Details
+                                            </h4>
+                                        </div>
+                                        <div class="accordion-body collapse show" id="panel-body-1"
+                                            data-parent="#accordion">
+                                            <form class="row g-3">
+                                                <div class="col-md-12">
+                                                    <label class="form-label">Description</label>
+                                                    <input type="text" class="form-control"
+                                                        placeholder="{{res.Description}}" readonly>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <div class="accordion">
+                                        <div class="accordion-header {% if res.Status == 'Open' %} bg-dark {% elif res.Status == 'Pending Approval' %}bg-warning{% elif res.Status == 'Released' %}bg-green{% elif res.Status == 'Rejected' %}bg-danger{% endif %}"
+                                            role="button" data-toggle="collapse" data-target="#panel-body-2"
+                                            aria-expanded="true">
+                                            <h4>
+                                                <span class="accordion-icon"><i class="fas fa-plus"></i></span>
+                                                Leave Adjustments Lines
+                                            </h4>
+                                        </div>
+                                        <div class="accordion-body collapse show" id="panel-body-2"
+                                            data-parent="#accordion">
+                                            {% if res.Status == 'Open' %}
+                                            <form method="POST" action="{% url 'AdjustmentDetails' res.Code %}"
+                                                novalidate>
+                                                <input type="hidden" name="lineNo" value="0">
+                                                <input type="hidden" name="myAction" id="myAction" value="insert">
+                                                {% csrf_token %}
+                                                <div class="row">
+                                                    <div class="form-group col-4">
+                                                        <label>Leave Type<span class="text-danger">*</span></label>
+                                                        <select class="form-control select2" name="leaveType" required>
+                                                            <option selected disabled value="0">--Select Leave Type--
+                                                            </option>
+                                                            {% for res in leave %}
+                                                            <option value="{{res.Code}}">{{res.Description}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group col-4">
+                                                        <label for="last_name">Transaction Type <span
+                                                                class="text-danger">*</span></label>
+                                                        <select class="form-control select2" name="transType" required>
+
+                                                            <option value="0" disabled selected>--Select Option--
+                                                            </option>
+                                                            <option value="1">Leave
+                                                                Allocation</option>
+                                                            <option value="2">Leave Recall
+                                                            </option>
+                                                            <option value="3">Overtime
+                                                            </option>
+                                                            <option value="4">Leave
+                                                                Application</option>
+                                                            <option value="5">Leave
+                                                                Adjustment</option>
+                                                            <option value="6">Leave B/F
+                                                            </option>
+                                                            <option value="7">Absent
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group col-4">
+                                                        <label for="frist_name">Entitlement Adjustment <span
+                                                                class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control" name="entitlementAdj"
+                                                            placeholder="0.00" autofocus required>
+                                                    </div>
+                                                    <div class="form-group col-12">
+                                                        <button type="submit"
+                                                            class="btn btn-warning mt-4 btn-lg btn-block">
+                                                            Save Lines
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                            {% endif %}
+                                            <div class="table-responsive my-3">
+                                                <h6>
+                                                    Adjustment Lines
+                                                </h6>
+                                                <table class="table table-striped data-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Name</th>
+                                                            <th>Leave Type</th>
+                                                            <th>Adjustment Entry Type</th>
+                                                            <th>New Entitlement</th>
+                                                            <th>Transaction Type</th>
+                                                            {% if res.Status == 'Open' %}
+                                                            <th>Action</th>
+                                                            {% endif %}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for line in lines %}
+                                                        <tr>
+                                                            <td>{{line.EmployeeName}}</td>
+                                                            <td>{{line.LeaveCode}}</td>
+                                                            <td>{{line.LeaveAdjEntryType}} </td>
+                                                            <td>{{line.NewEntitlement}}</td>
+                                                            <td>{{line.TransactionType}} </td>
+                                                            {% if res.Status == 'Open' %}
+                                                            <td>
+                                                                <a class="btn btn-info btn-action mr-1"
+                                                                    data-toggle="modal" data-target="#edit"><i
+                                                                        class="fas fa-pencil-alt"></i> Edit</a>
+
+                                                                <form action="{% url 'AdjustmentDetails' res.Code %}"
+                                                                    method="post" style="display: inline-block;">
+                                                                    {% csrf_token %}
+                                                                    <input type="hidden" name="lineNo" value="0">
+                                                                    <input type="hidden" name="myAction" value="delete">
+                                                                    <input type="hidden" name="leaveType"
+                                                                        value="{{line.LeaveCode}}">
+                                                                    <input type="hidden" name="transType" value="0">
+                                                                    <input type="hidden" name="entitlementAdj"
+                                                                        value="{{line.NewEntitlement}}">
+                                                                    <button type="submit"
+                                                                        class="btn btn-danger btn-action"
+                                                                        data-toggle="tooltip" title="Delete"><i
+                                                                            class="fas fa-trash"></i>Delete</button>
+                                                                </form>
+                                                            </td>
+                                                            {% endif %}
+                                                        </tr>
+                                                        <div class="modal fade" tabindex="-1" role="dialog" id="edit">
+                                                            <div class="modal-dialog" role="document">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title">Edit Leave Adjustment
+                                                                            Line</h5>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <form method="post"
+                                                                            action="{% url 'AdjustmentDetails' res.Code %}"
+                                                                            novalidate>
+                                                                            {% csrf_token %}
+                                                                            <input type="hidden" name="lineNo"
+                                                                                value="0">
+                                                                            <input type="hidden" name="myAction"
+                                                                                value="modify">
+                                                                            <div class="row">
+                                                                                <div class="form-group col-6">
+                                                                                    <label>Leave Type<span
+                                                                                            class="text-danger">*</span></label>
+                                                                                    <select class="form-control select2"
+                                                                                        name="leaveType" id="leaveType"
+                                                                                        required>
+                                                                                        <option selected disabled
+                                                                                            value="0">--Select Leave
+                                                                                            Type--
+                                                                                        </option>
+                                                                                        {% for res in leave %}
+                                                                                        <option value="{{res.Code}}">
+                                                                                            {{res.Description}}</option>
+                                                                                        {% endfor %}
+                                                                                    </select>
+                                                                                </div>
+                                                                                <div class="col-md-6">
+                                                                                    <label for="last_name">Transaction
+                                                                                        Type <span
+                                                                                            class="text-danger">*</span></label>
+                                                                                    <select class="form-control select2"
+                                                                                        name="transType" required>
+                                                                                        {% if line.TransactionType == 'Leave Adjustment' %}
+                                                                                        <option value="5" selected>Leave
+                                                                                            Adjustment</option>
+                                                                                        <option value="1">Leave
+                                                                                            Allocation</option>
+                                                                                        <option value="2">Leave Recall
+                                                                                        </option>
+                                                                                        <option value="3">Overtime
+                                                                                        </option>
+                                                                                        <option value="4">Leave
+                                                                                            Application</option>
+                                                                                        <option value="6">Leave B/F
+                                                                                        </option>
+                                                                                        <option value="7">Absent
+                                                                                        </option>
+                                                                                        {% elif line.TransactionType == 'Leave Allocation' %}
+                                                                                        <option value="1" selected>Leave
+                                                                                            Allocation</option>
+                                                                                        <option value="2">Leave Recall
+                                                                                        </option>
+                                                                                        <option value="3">Overtime
+                                                                                        </option>
+                                                                                        <option value="4">Leave
+                                                                                            Application</option>
+                                                                                        <option value="5">Leave
+                                                                                            Adjustment</option>
+                                                                                        <option value="6">Leave B/F
+                                                                                        </option>
+                                                                                        <option value="7">Absent
+                                                                                        </option>
+                                                                                        {% elif line.TransactionType == 'Leave Recall' %}
+                                                                                        <option value="1">Leave
+                                                                                            Allocation</option>
+                                                                                        <option value="2" selected>Leave
+                                                                                            Recall</option>
+                                                                                        <option value="3">Overtime
+                                                                                        </option>
+                                                                                        <option value="4">Leave
+                                                                                            Application</option>
+                                                                                        <option value="5">Leave
+                                                                                            Adjustment</option>
+                                                                                        <option value="6">Leave B/F
+                                                                                        </option>
+                                                                                        <option value="7">Absent
+                                                                                        </option>
+                                                                                        {% elif line.TransactionType == 'Overtime' %}
+                                                                                        <option value="1">Leave
+                                                                                            Allocation</option>
+                                                                                        <option value="2">Leave Recall
+                                                                                        </option>
+                                                                                        <option value="3" selected>
+                                                                                            Overtime</option>
+                                                                                        <option value="4">Leave
+                                                                                            Application</option>
+                                                                                        <option value="5">Leave
+                                                                                            Adjustment</option>
+                                                                                        <option value="6">Leave B/F
+                                                                                        </option>
+                                                                                        <option value="7">Absent
+                                                                                        </option>
+                                                                                        {% elif line.TransactionType == 'Leave Application' %}
+                                                                                        <option value="1">Leave
+                                                                                            Allocation</option>
+                                                                                        <option value="2">Leave Recall
+                                                                                        </option>
+                                                                                        <option value="3">Overtime
+                                                                                        </option>
+                                                                                        <option value="4" selected>Leave
+                                                                                            Application</option>
+                                                                                        <option value="5">Leave
+                                                                                            Adjustment</option>
+                                                                                        <option value="6">Leave B/F
+                                                                                        </option>
+                                                                                        <option value="7">Absent
+                                                                                        </option>
+                                                                                        {% elif line.TransactionType == 'Leave B/F' %}
+                                                                                        <option value="1">Leave
+                                                                                            Allocation</option>
+                                                                                        <option value="2">Leave Recall
+                                                                                        </option>
+                                                                                        <option value="3">Overtime
+                                                                                        </option>
+                                                                                        <option value="4">Leave
+                                                                                            Application</option>
+                                                                                        <option value="5">Leave
+                                                                                            Adjustment</option>
+                                                                                        <option value="6" selected>Leave
+                                                                                            B/F</option>
+                                                                                        <option value="7">Absent
+                                                                                        </option>
+                                                                                        {% elif line.TransactionType == 'Absent' %}
+                                                                                        <option value="1">Leave
+                                                                                            Allocation</option>
+                                                                                        <option value="2">Leave Recall
+                                                                                        </option>
+                                                                                        <option value="3">Overtime
+                                                                                        </option>
+                                                                                        <option value="4">Leave
+                                                                                            Application</option>
+                                                                                        <option value="5">Leave
+                                                                                            Adjustment</option>
+                                                                                        <option value="6">Leave B/F
+                                                                                        </option>
+                                                                                        <option value="7" selected>
+                                                                                            Absent</option>
+                                                                                        {% else %}
+                                                                                        <option value="0" disabled
+                                                                                            selected>--Select Option--
+                                                                                        </option>
+                                                                                        <option value="1">Leave
+                                                                                            Allocation</option>
+                                                                                        <option value="2">Leave Recall
+                                                                                        </option>
+                                                                                        <option value="3">Overtime
+                                                                                        </option>
+                                                                                        <option value="4">Leave
+                                                                                            Application</option>
+                                                                                        <option value="5">Leave
+                                                                                            Adjustment</option>
+                                                                                        <option value="6">Leave B/F
+                                                                                        </option>
+                                                                                        <option value="7">Absent
+                                                                                        </option>
+                                                                                        {% endif %}
+                                                                                    </select>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="row">
+                                                                                <div class="form-group col-12">
+                                                                                    <label for="frist_name">Entitlement
+                                                                                        Adjustment <span
+                                                                                            class="text-danger">*</span></label>
+                                                                                    <input type="text"
+                                                                                        class="form-control"
+                                                                                        name="entitlementAdj"
+                                                                                        value="{{line.NewEntitlement}}"
+                                                                                        autofocus required>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="form-group my-2">
+                                                                                <button type="submit"
+                                                                                    class="btn btn-info btn-lg btn-block">
+                                                                                    Edit
+                                                                                </button>
+                                                                            </div>
+                                                                        </form>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <script>
+                                                            $(document).ready(function () {
+                                                                var leaveCodeToSelect = "{{line.LeaveCode}}";
+                                                                var leaveTypeSelect = $(
+                                                                    "#leaveType");
+                                                                leaveTypeSelect.find('option').each(
+                                                                    function () {
+                                                                        if ($(this).val() ===
+                                                                            leaveCodeToSelect) {
+                                                                            $(this).prop('selected', true);
+                                                                        }
+                                                                    });
+                                                            })
+                                                        </script>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if res.Status == 'Pending Approval' %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="table-responsive">
+                                    <h6>
+                                        Adjustment Approvers
+                                    </h6>
+                                    <table class="table table-striped data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Sequence</th>
+                                                <th>Status</th>
+                                                <th>Modified By</th>
+                                                <th>Modified Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for Approvers in Approvers %}
+                                            <tr>
+                                                <td>{{Approvers.ApproverID}}</td>
+                                                <td>{{Approvers.SequenceNo}}</td>
+                                                <td>{{Approvers.Status}} </td>
+                                                <td>{{Approvers.Last_Modified_By_User_ID}}</td>
+                                                <td id="ModifiedDate{{Approvers.Entry_No_}}">
+                                                    {{Approvers.Last_Date_Time_Modified}}
+                                                </td>
+                                                <script>
+                                                    $(document).ready(function () {
+                                                        $("#ModifiedDate{{Approvers.Entry_No_}}")
+                                                            .empty().append(moment(
+                                                                    '{{Approvers.Last_Date_Time_Modified}}',
+                                                                    "YYYY-MM-DD")
+                                                                .format(
+                                                                    'Do MMM YYYY'));
+                                                    })
+                                                </script>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="row my-3">
+                            <div class="col-md-12 button-container d-flex justify-content-center">
+                                {% if res.Status == 'Open' %}
+                                <form action="{% url 'FnRequestLeaveAdjustmentApproval' res.Code %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary">
+                                        Request For Approval
+                                    </button>
+                                </form>
+                                {% elif res.Status == 'Pending Approval' %}
+                                <form action="{% url 'FnCancelLeaveAdjustmentApproval' res.Code %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">
+                                        Cancel Request for Approval
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

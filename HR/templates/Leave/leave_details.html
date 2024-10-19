@@ -1,0 +1,559 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+Leave {{response.ID}}
+{% endblock %}
+{% block head %}
+<style>
+    .accordion-header[aria-expanded="true"] .accordion-icon i:before {
+        content: "\f068";
+    }
+
+    .left-align {
+        text-align: left;
+    }
+
+    .right-align {
+        text-align: right;
+    }
+
+    .p-4 {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .controlBtn {
+        display: flex;
+        justify-content: center;
+    }
+
+    .button-container {
+        display: flex;
+    }
+
+    .button-container>form,
+    .button-container>button {
+        margin-right: 5px;
+        /* Adjust this value to control the space between the buttons */
+    }
+
+    /* Adjust the margin-right for the last button to remove the extra space */
+    .button-container>form:last-child,
+    .button-container>button:last-child {
+        margin-right: 0;
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+{% include 'alerts.html' %}
+<section>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mb-3">
+                    <div
+                        class="p-4 text-white text-lg {% if res.Status == 'Open' %} bg-dark {% elif res.Status == 'Pending Approval' %}bg-warning{% elif res.Status == 'Released' %}bg-green{% elif res.Status == 'Rejected' %}bg-danger{% endif %} rounded-top">
+                        <h2 class="left-align">Leave Details</h2>
+                        <p class="right-align text-uppercase"> Reference No - <span
+                                class="text-medium">{{res.Application_No}}</span></p>
+                    </div>
+                    <div class="d-flex flex-wrap flex-sm-nowrap justify-content-between py-3 px-2 bg-secondary">
+                        <div class="w-100 text-center py-1 px-2"><span class="text-medium font-weight-bold">
+                                Status:</span> {{res.Status}}
+                        </div>
+                        <div class="w-100 text-center py-1 px-2"><span class="text-medium font-weight-bold">Leave Type:
+                            </span>{{res.Leave_Code}}
+                        </div>
+                        <div class="w-100 text-center py-1 px-2"><span class="text-medium font-weight-bold">Start Date:
+                            </span><span id="Start_Date">{{res.Start_Date}}</span>
+                        </div>
+                        <div class="w-100 text-center py-1 px-2"><span class="text-medium font-weight-bold"> Days
+                                Applied:</span> {{res.Days_Applied}}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="accordion">
+                                    <div class="accordion">
+                                        <div class="accordion-header {% if res.Status == 'Open' %}bg-dark {% elif res.Status == 'Pending Approval' %}bg-warning{% elif res.Status == 'Released' %}bg-green{% elif res.Status == 'Rejected' %}bg-danger{% endif %}"
+                                            role="button" data-toggle="collapse" data-target="#panel-body-1"
+                                            aria-expanded="true">
+                                            <h4>
+                                                <span class="accordion-icon"><i class="fas fa-plus"></i></span>
+                                                Application Details
+                                            </h4>
+                                        </div>
+                                        <div class="accordion-body collapse show" id="panel-body-1"
+                                            data-parent="#accordion">
+
+                                            <form class="row g-3">
+                                                <input type="hidden" name="applicationNo"
+                                                    value="{{res.Application_No}}">
+                                                <div class="col-md-4">
+                                                    <label>Leave Type<span class="text-danger">*</span></label>
+                                                    <select class="form-control select2" name="leaveType" id="leaveType"
+                                                        disabled>
+                                                        {% for leave in leave %}
+                                                        <option value="{{leave.Code}}"
+                                                            {% if leave.Code == res.Leave_Code %} selected {% endif %}>
+                                                            {{leave.Description}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label>Leave Balance</label>
+                                                        <input type="text" class="form-control"
+                                                            placeholder="{{res.Leave_balance}}" disabled>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Leave Period</label>
+                                                    <input type="text" class="form-control"
+                                                        placeholder="{{res.Leave_Period}}" readonly>
+                                                </div>
+                                                <div class="form-group col-4">
+                                                    <label class="form-label"> Leave Based on Planner? <span
+                                                            class="text-danger">*</span></label>
+                                                    <select class="form-control" id="BasedOnPlanner"
+                                                        name="BasedOnPlanner" disabled>
+                                                        <option value="True">Yes</option>
+                                                        <option value="False">No</option>
+                                                    </select>
+                                                </div>
+                                                {% if Use_Planner == False %}
+                                                <div class="col-md-4" id="startDateCol">
+                                                    <label class="form-label">Leave Start Date</label>
+                                                    <input type="text" class="form-control" id="LeaveStartDate"
+                                                        name="LeaveStartDate" value="{{res.Start_Date}}" disabled>
+                                                </div>
+                                                {% else %}
+                                                {% if res.Status == "Open" %}
+                                                <div class="form-group col-4" id="planner_col">
+                                                    <label class="form-label"> Planner Start Date</label>
+                                                    <select class="form-control" id="plannerStartDate" disabled>
+                                                        <option value="0" disabled selected>--Select--</option>
+                                                        {% for plan in plan %}
+                                                        <option value="{{plan.StartDate}}">{{plan.StartDate}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                {% else %}
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Planner Start Date</label>
+                                                    <input type="text" class="form-control"
+                                                        placeholder="{{res.Planner_Start_Date}}" readonly>
+                                                </div>
+                                                {% endif %}
+                                                {% endif %}
+                                                <div class="form-group col-4">
+                                                    <label for="last_name">Return Same Day <span
+                                                            class="text-danger">*</span></label>
+                                                    <select class="form-control select2" id="isReturnSameDay"
+                                                        name="isReturnSameDay" disabled>
+                                                        <option value="0" disabled selected>--Select Option--</option>
+                                                        <option value="True">Yes</option>
+                                                        <option value="False">No</option>
+                                                    </select>
+                                                </div>
+                                                {% if res.Return_same_day == False %}
+                                                <div class="col-md-4" id="daysAppliedCol">
+                                                    <div class="form-group">
+                                                        <label>Days Applied</label>
+                                                        <input type="text" class="form-control" id="daysApplied"
+                                                            name="daysApplied" value="{{res.Days_Applied}}" disabled>
+                                                    </div>
+                                                </div>
+                                                {% else %}
+                                                <div class="col-md-4" id="whichHalfOfDayCol" style="display:none;">
+                                                    <div class="form-group">
+                                                        <label>Half Day Leave Application</label>
+                                                        <select class="form-control select2" id="whichHalfOfDay"
+                                                            name="whichHalfOfDay" disabled>
+                                                            <option value="0" selected disabled>--Select--
+                                                            </option>
+                                                            <option value="1">First half of the day</option>
+                                                            <option value="2">First half of the day</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Application Date</label>
+                                                    <input type="text" class="form-control" id="application_date"
+                                                        placeholder="{{res.Application_Date}}" readonly>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Leave End Date</label>
+                                                    <input type="text" class="form-control" id="end_date"
+                                                        placeholder="{{res.End_Date}}" readonly>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Resumption Date</label>
+                                                    <input type="text" class="form-control" id="resumption_date"
+                                                        placeholder="{{res.Resumption_Date}}" readonly>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    {% if Relievers|length > 0 %}
+                                    <div class="accordion">
+                                        <div class="accordion-header {% if res.Status == 'Open' %}bg-dark {% elif res.Status == 'Pending Approval' %}bg-warning{% elif res.Status == 'Released' %}bg-green{% elif res.Status == 'Rejected' %}bg-danger{% endif %}"
+                                            role="button" data-toggle="collapse" data-target="#panel-body-2"
+                                            aria-expanded="true">
+                                            <h4>
+                                                <span class="accordion-icon"><i class="fas fa-plus"></i></span>
+                                                Leave Relievers
+                                            </h4>
+                                        </div>
+                                        <div class="accordion-body collapse show" id="panel-body-2"
+                                            data-parent="#accordion">
+                                            <table class="table table-striped data-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>
+                                                            Leave Code
+                                                        </th>
+                                                        <th>Staff No</th>
+                                                        <th>Staff Name</th>
+                                                        <th>Section</th>
+                                                        {% if res.Status == 'Open' %}
+                                                        <th>Action</th>
+                                                        {% endif %}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for line in Relievers %}
+                                                    <tr>
+                                                        <td>{{line.LeaveCode}}</td>
+                                                        <td>{{line.StaffNo}}</td>
+                                                        <td>{{line.StaffName}}</td>
+                                                        <td>{{line.ShortcutDimension1Code}}</td>
+                                                        {% if res.Status == 'Open' %}
+                                                        <td>
+                                                            <button type="button" class="btn btn-info"
+                                                                data-toggle="modal"
+                                                                data-target="#edit_plans{{line.StaffNo}}">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                        </td>
+                                                        {% endif %}
+                                                    </tr>
+
+                                                    <div class="modal fade" tabindex="-1" role="dialog"
+                                                        id="edit_plans{{line.StaffNo}}">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Leave Reliever</h5>
+                                                                    <button type="button" class="close"
+                                                                        data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <form method="POST"
+                                                                        action="{% url 'FnLeaveReliever' res.Application_No %}"
+                                                                        novalidate>
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" name="myAction"
+                                                                            value="modify">
+                                                                        <div class="row">
+                                                                            <div class="form-group col-12">
+                                                                                <label>Reliever<span
+                                                                                        class="text-danger">*</span></label>
+                                                                                <select class="form-control select2"
+                                                                                    name="Reliever" id="Reliever"
+                                                                                    required>
+                                                                                    {% for Reliever in Reliever %}
+                                                                                    <option value="{{Reliever.No_}}"
+                                                                                        {% if line.StaffNo == Reliever.No_ %}
+                                                                                        selected {% endif %}>
+                                                                                        {{Reliever.First_Name}}
+                                                                                        {{Reliever.Last_Name}}
+                                                                                    </option>
+                                                                                    {% endfor %}
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="form-group my-2">
+                                                                            <button type="submit"
+                                                                                class="btn btn-primary btn-lg btn-block">
+                                                                                Change Reliever
+                                                                            </button>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if file|length > 0 %}
+                                    <div class="accordion">
+                                        <div class="accordion-header {% if res.Status == 'Open' %}bg-dark {% elif res.Status == 'Pending Approval' %}bg-warning{% elif res.Status == 'Released' %}bg-green{% elif res.Status == 'Rejected' %}bg-danger{% endif %}"
+                                            role="button" data-toggle="collapse" data-target="#panel-body-3"
+                                            aria-expanded="true">
+                                            <h4>
+                                                <span class="accordion-icon"><i class="fas fa-plus"></i></span>
+                                                Leave Attachments
+                                            </h4>
+                                        </div>
+                                        <div class="accordion-body collapse show" id="panel-body-3"
+                                            data-parent="#accordion">
+                                            <p class="mb-0">
+                                                <div class="row m-2">
+                                                    {% for data in file %}
+                                                    <div class="col-lg-2 col-xl-2">
+                                                        <div class="file-man-box">
+                                                            {% if res.Status == 'Open' %}
+                                                            <form action="{% url 'DeleteLeaveAttachment' data.No  %}"
+                                                                method="POST">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="docID" value="{{data.ID}}">
+                                                                <input type="hidden" name="tableID"
+                                                                    value="{{data.TableID}}">
+                                                                <button class="file-close" id="file-close"><i
+                                                                        class="fa fa-times-circle"></i></button>
+                                                            </form>
+                                                            {% endif %}
+                                                            <div class="file-img-box"><img
+                                                                    src="{% static 'icons/approved.gif' %}" alt="icon">
+                                                            </div>
+                                                            <form action="{% url 'DownloadDocs' data.No data.TableID %}"
+                                                                method="POST">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="attachmentID"
+                                                                    value="{{data.ID}}">
+                                                                <input type="hidden" name="File_Name"
+                                                                    value="{{data.FileName}}">
+                                                                <input type="hidden" name="File_Extension"
+                                                                    value="{{data.FileExtension}}">
+                                                                <button class="file-download mx-1"><i
+                                                                        class="fa fa-download"></i></button>
+                                                            </form>
+                                                            <div class="file-man-title">
+                                                                <h5 class="mb-0 text-overflow">
+                                                                    {{data.FileName}}.{{data.FileExtension}}</h5>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if res.Status == "Rejected" %}
+                                    <div class="accordion">
+                                        <div class="accordion-header  {% if res.Status == 'Open' %}bg-dark {% elif res.Status == 'Pending Approval' %}bg-warning{% elif res.Status == 'Released' %}bg-green{% elif res.Status == 'Rejected' %}bg-danger{% endif %}"
+                                            role="button" data-toggle="collapse" data-target="#panel-body-4"
+                                            aria-expanded="true">
+                                            <h4>
+                                                <span class="accordion-icon"><i class="fas fa-plus"></i></span>
+                                                Rejection Comments
+                                            </h4>
+                                        </div>
+                                        <div class="accordion-body collapse show" id="panel-body-4"
+                                            data-parent="#accordion">
+                                            <div class="chat-history">
+                                                <ul class="m-b-0">
+                                                    <li class="clearfix">
+                                                        <div class="message-data">
+                                                            <span class="message-data-time">{{comment.UserID}}</span>
+                                                        </div>
+                                                        <div class="message my-message">
+                                                            {{comment.Comment}}
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% if res.Status == "Pending Approval" %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="table-responsive">
+                                    <h6>
+                                        Leave Approvers
+                                    </h6>
+                                    <table class="table table-striped data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Sequence</th>
+                                                <th>Status</th>
+                                                <th>Modified By</th>
+                                                <th>Modified Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for Approvers in Approvers %}
+                                            <tr>
+                                                <td>{{Approvers.ApproverID}}</td>
+                                                <td>{{Approvers.SequenceNo}}</td>
+                                                <td>{{Approvers.Status}} </td>
+                                                <td>{{Approvers.Last_Modified_By_User_ID}}</td>
+                                                <td id="ModifiedDate{{Approvers.Entry_No_}}">
+                                                    {{Approvers.Last_Date_Time_Modified}}
+                                                </td>
+                                                <script>
+                                                    $(document).ready(function () {
+                                                        $("#ModifiedDate{{Approvers.Entry_No_}}")
+                                                            .empty().append(moment(
+                                                                    '{{Approvers.Last_Date_Time_Modified}}',
+                                                                    "YYYY-MM-DD")
+                                                                .format(
+                                                                    'Do MMM YYYY'));
+                                                    })
+                                                </script>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="row my-3">
+                            <div class="col-md-12 button-container d-flex justify-content-center">
+                                {% if res.Status == "Open" or res.Status == 'Rejected' %}
+                                <form action="{% url 'LeaveApprove' res.Application_No %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary">
+                                        Request For Approval
+                                    </button>
+                                </form>
+                                <a type="button" class="btn btn-secondary" data-toggle="modal"
+                                    data-target="#Attachment">
+                                    Upload Attachment
+                                </a>
+                                {% elif res.Status == "Pending Approval" %}
+                                <form action="{% url 'LeaveCancel' res.Application_No %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">
+                                        Cancel Request for Approval
+                                    </button>
+                                </form>
+                                {% elif res.Status == "Released" %}
+                                <form action="{% url 'FnGenerateLeaveReport' res.Application_No %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-info">
+                                        Preview Report
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" tabindex="-1" role="dialog" id="Attachment">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload
+                        Attachment</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'LeaveDetails' res.Application_No %}" novalidate
+                        enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>Attachments</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        <i class="fas fa-file"></i>
+                                    </div>
+                                </div>
+                                <input type="file" class="form-control" name="attachment" multiple required />
+                            </div>
+                        </div>
+                        <div class="form-group my-2">
+                            <button type="submit" class="btn btn-primary btn-lg btn-block">
+                                Upload
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    $(document).ready(function () {
+        var Leave_Code = '{{res.Leave_Code}}';
+        var Status = '{{res.Status}}'
+        var Use_Planner = '{{res.Use_Planner}}'
+        var Planner_Start_Date = '{{res.Planner_Start_Date}}'
+
+        var Start_Date = '{{res.Start_Date}}';
+        $("#Start_Date")
+            .empty().append(moment(
+                    Start_Date,
+                    "YYYY-MM-DD")
+                .format(
+                    'Do MMM YYYY'));
+        var Return_same_day = '{{res.Return_same_day}}';
+        const $BasedOnPlannerInput = $("#BasedOnPlanner")
+        const $plannerStartDate = $("#plannerStartDate")
+        const $startDateInput = $("#start-date")
+        const $startDateCol = $("#startDateCol")
+        const $planner_col = $("#planner_col")
+        const $isReturnSameDay = $("#isReturnSameDay")
+
+        $BasedOnPlannerInput.on("change", function () {
+            if (this.value === "True") {
+                $startDateInput.prop("disabled", true)
+                $startDateCol.hide()
+                $plannerStartDate.prop("disabled", false)
+                $planner_col.show(600)
+            } else if (this.value === "False") {
+                $plannerStartDate.prop("disabled", true)
+                $startDateCol.show(600)
+                $startDateInput.prop("disabled", false)
+                $planner_col.hide()
+            }
+        })
+
+        $('#leaveType option[value="' + Leave_Code + '"]').prop('selected', true);
+
+        if (Use_Planner == 'True') {
+
+            $('#BasedOnPlanner option[value="True"]').prop('selected', true);
+            $('#plannerStartDate').val(Planner_Start_Date);
+
+            //$('#plannerStartDate option[value="' + Planner_Start_Date + '"]').prop('selected', true);
+
+        } else {
+            $('#BasedOnPlanner option[value="False"]').prop('selected', true);
+        }
+
+        if (Return_same_day == 'True') {
+
+            $('#isReturnSameDay option[value="True"]').prop('selected', true);
+
+        } else {
+            $('#isReturnSameDay option[value="False"]').prop('selected', true);
+        }
+    })
+</script>
+{% endblock %}

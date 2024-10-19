@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+Approval Request
+{% endblock %}
+
+{% block main %}
+<section class="section">
+    {% include 'alerts.html' %}
+    <div class="section-header">
+        <h1>Approval
+            Requests <i class="fas fa-folder-open inside-icon"></i></h1>
+        <div class="section-header-breadcrumb">
+            <div class="breadcrumb-item active"><a href="{% url 'dashboard' %}">Dashboard</a></div>
+            <div class="breadcrumb-item">Approval
+                Requests</div>
+        </div>
+    </div>
+    <div class="section-body bg-white p-2">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <ul class="nav nav-tabs nav-justified" id="myTab2" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#home2" role="tab"
+                                    aria-controls="home" aria-selected="true">Documents
+                                    Pending Your
+                                    Approval ({{open_approvals|length}})</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="profile-tab2" data-toggle="tab" href="#profile2" role="tab"
+                                    aria-controls="profile" aria-selected="false">Documents You
+                                    Approved ({{closed_approvals|length}})</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="contact-tab2" data-toggle="tab" href="#contact2" role="tab"
+                                    aria-controls="contact" aria-selected="false">Documents You
+                                    Rejected ({{rejected_approvals|length}})</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content tab-bordered" id="myTab3Content">
+                            <div class="tab-pane fade show active" id="home2" role="tabpanel"
+                                aria-labelledby="home-tab2">
+                                <div class="table-responsive">
+                                    <table class="table table-striped" id="table-2">
+                                        <thead>
+                                            <tr>
+                                                <th>Document No.</th>
+                                                <th>Document Type</th>
+                                                <th>Date Sent</th>
+                                                <th>Sender</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for res in open_approvals %}
+                                            <tr>
+                                                <td>{{res.DocumentNo}} </td>
+                                                <td>
+                                                    <div class="badge badge-secondary">
+                                                        {% if res.DocumentType == '18' %}
+                                                        Leave Adjustment
+                                                        {% elif res.DocumentType == '20' %}
+                                                        Leave Application
+                                                        {% elif res.DocumentType == '25' %}
+                                                        Leave Recall
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                                <td id="open_leave_date_sent{{res.DocumentNo}}">
+                                                    {{res.Last_Date_Time_Modified}}</td>
+                                                <td>{{res.Sender_Name}}</td>
+                                                <td>{{res.Status}}</td>
+                                                <script>
+                                                    $(document).ready(function () {
+                                                        $("#open_leave_date_sent{{res.DocumentNo}}")
+                                                            .empty().append(moment(
+                                                                    '{{res.Last_Date_Time_Modified}}',
+                                                                    "YYYY-MM-DD, h:mm:ss a")
+                                                                .format(
+                                                                    'Do MMM YYYY, h:mm a'));
+                                                    })
+                                                </script>
+                                                <td>
+                                                    <a href="{% url 'ApproveDetails' res.DocumentNo %}"
+                                                        class="btn btn-danger btn-icon-text" type="button"
+                                                        data-toggle="tooltip" data-placement="top" title="View">Details
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="profile2" role="tabpanel" aria-labelledby="profile-tab2">
+                                <div class="table-responsive">
+                                    <table class="table table-striped" id="table-1">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    Document No.
+                                                </th>
+                                                <th>Document Type</th>
+                                                <th>Date Sent</th>
+                                                <th>Sender</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for res in closed_approvals %}
+                                            <tr>
+                                                <td>{{res.DocumentNo}} </td>
+                                                <td>
+                                                    <div class="badge badge-secondary">
+                                                        {% if res.DocumentType == '18' %}
+                                                        Leave Adjustment
+                                                        {% elif res.DocumentType == '20' %}
+                                                        Leave Application
+                                                        {% elif res.DocumentType == '25' %}
+                                                        Leave Recall
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                                <td id="app_leave_date_sent{{res.DocumentNo}}">
+                                                    {{res.Last_Date_Time_Modified}}</td>
+                                                <td>{{res.Sender_Name}}</td>
+                                                <td>{{res.Status}}</td>
+                                                <script>
+                                                    $(document).ready(function () {
+                                                        $("#app_leave_date_sent{{res.DocumentNo}}")
+                                                            .empty().append(moment(
+                                                                    '{{res.Last_Date_Time_Modified}}',
+                                                                    "YYYY-MM-DD, h:mm:ss a")
+                                                                .format(
+                                                                    'Do MMM YYYY, h:mm a'));
+                                                    })
+                                                </script>
+                                                <td>
+                                                    <a href="{% url 'ApproveDetails' res.DocumentNo %}"
+                                                        class="btn btn-danger btn-icon-text" type="button"
+                                                        data-toggle="tooltip" data-placement="top" title="View">Details
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="contact2" role="tabpanel" aria-labelledby="contact-tab2">
+                                <div class="table-responsive">
+                                    <table class="table table-striped data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    Document No.
+                                                </th>
+                                                <th>Document Type</th>
+                                                <th>Date Sent</th>
+                                                <th>Sender</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for res in rejected_approvals %}
+                                            <tr>
+                                                <td>{{res.DocumentNo}} </td>
+                                                <td>
+                                                    <div class="badge badge-secondary">
+                                                        {% if res.DocumentType == '18' %}
+                                                        Leave Adjustment
+                                                        {% elif res.DocumentType == '20' %}
+                                                        Leave Application
+                                                        {% elif res.DocumentType == '25' %}
+                                                        Leave Recall
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                                <td id="rejected_leave_date_sent{{res.DocumentNo}}">
+                                                    {{res.Last_Date_Time_Modified}}</td>
+                                                <td>{{res.Sender_Name}}</td>
+                                                <td>{{res.Status}}</td>
+                                                <script>
+                                                    $(document).ready(function () {
+                                                        $("#rejected_leave_date_sent{{res.DocumentNo}}")
+                                                            .empty().append(moment(
+                                                                    '{{res.Last_Date_Time_Modified}}',
+                                                                    "YYYY-MM-DD, h:mm:ss a")
+                                                                .format(
+                                                                    'Do MMM YYYY, h:mm a'));
+                                                    })
+                                                </script>
+                                                <td>
+                                                    <a href="{% url 'ApproveDetails' res.DocumentNo %}"
+                                                        class="btn btn-danger btn-icon-text" type="button"
+                                                        data-toggle="tooltip" data-placement="top" title="View">Details
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</section>
+{% endblock %}

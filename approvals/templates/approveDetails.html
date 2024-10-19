@@ -1,0 +1,430 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+Leave {{response.ID}}
+{% endblock %}
+{% block head %}
+<style>
+    .accordion-header[aria-expanded="true"] .accordion-icon i:before {
+        content: "\f068";
+    }
+
+    .left-align {
+        text-align: left;
+    }
+
+    .right-align {
+        text-align: right;
+    }
+
+    .p-4 {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .controlBtn {
+        display: flex;
+        justify-content: center;
+    }
+
+    .button-container {
+        display: flex;
+    }
+
+    .button-container>form,
+    .button-container>button {
+        margin-right: 5px;
+        /* Adjust this value to control the space between the buttons */
+    }
+
+    /* Adjust the margin-right for the last button to remove the extra space */
+    .button-container>form:last-child,
+    .button-container>button:last-child {
+        margin-right: 0;
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+{% include 'alerts.html' %}
+<section>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mb-3">
+                    <div class="p-4 text-white text-lg bg-danger rounded-top">
+                        <h2 class="left-align">{% if res.DocumentType == "20" %} Leave
+                            {% elif res.DocumentType == "18" %} Leave Adjustment {% elif res.DocumentType == "25" %}
+                            Leave Recall {% endif %} Approval
+                        </h2>
+                        <p class="right-align text-uppercase"> Document No - <span
+                                class="text-medium">{{res.DocumentNo}}</span></p>
+                    </div>
+                    <div class="d-flex flex-wrap flex-sm-nowrap justify-content-between py-3 px-2 bg-secondary">
+                        <div class="w-100 text-center py-1 px-2"><span class="text-medium font-weight-bold">Document
+                                Type:
+                            </span> {% if res.DocumentType == "20" %} Leave Application
+                            {% elif res.DocumentType == "18" %} Leave Adjustment {% elif res.DocumentType == "25" %}
+                            Leave Recall {% endif %}
+                        </div>
+                        <div class="w-100 text-center py-1 px-2"><span class="text-medium font-weight-bold">Sender:
+                            </span>{{res.Sender_Name}}
+                        </div>
+                        {% if res.Due_Date and res.Due_Date != "0001-01-01" %}
+                        <div class="w-100 text-center py-1 px-2"><span class="text-medium font-weight-bold"> Due
+                                Date:</span> <span id="EndDate">{{res.Due_Date}}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="accordion">
+                                    <div class="accordion">
+                                        <div class="accordion-header bg-danger" role="button" data-toggle="collapse"
+                                            data-target="#panel-body-1" aria-expanded="true">
+                                            <h4>
+                                                <span class="accordion-icon"><i class="fas fa-plus"></i></span>
+                                                {% if res.DocumentType == "20" %} Leave Application
+                                                {% elif res.DocumentType == "18" %} Leave Adjustment
+                                                {% elif res.DocumentType == "25" %} Leave Recall {% endif %} Details
+                                            </h4>
+                                        </div>
+                                        <div class="accordion-body collapse show" id="panel-body-1"
+                                            data-parent="#accordion">
+                                            {% if res.DocumentType == "20" %}
+                                            {% include 'details/leave_approval.html' %}
+                                            {% elif res.DocumentType == "18" %}
+                                            {% include 'details/adjustment_approval.html' %}
+                                            {% elif res.DocumentType == "25" %}
+                                            {% include 'details/leave_recall_approval.html' %}
+                                            {% endif %}
+
+                                        </div>
+                                    </div>
+                                    {% if file|length > 0 %}
+                                    <div class="accordion">
+                                        <div class="accordion-header bg-danger" role="button" data-toggle="collapse"
+                                            data-target="#panel-body-2" aria-expanded="true">
+                                            <h4>
+                                                <span class="accordion-icon"><i class="fas fa-plus"></i></span>
+                                                {% if res.DocumentType == "20" %} Leave
+                                                {% elif res.DocumentType == "18" %} Leave Adjustment
+                                                {% elif res.DocumentType == "25" %} Leave Recall{% endif %}
+                                                Attachments
+                                            </h4>
+                                        </div>
+                                        <div class="accordion-body collapse show" id="panel-body-2"
+                                            data-parent="#accordion">
+                                            <p class="mb-0">
+                                                <div class="row m-2">
+                                                    {% for data in file %}
+                                                    <div class="col-lg-2 col-xl-2">
+                                                        <div class="file-man-box">
+                                                            <div class="file-img-box"><img
+                                                                    src="{% static 'icons/approved.gif' %}" alt="icon">
+                                                            </div>
+                                                            <form action="{% url 'DownloadDocs' data.No data.TableID %}"
+                                                                method="POST">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="attachmentID"
+                                                                    value="{{data.ID}}">
+                                                                <input type="hidden" name="File_Name"
+                                                                    value="{{data.FileName}}">
+                                                                <input type="hidden" name="File_Extension"
+                                                                    value="{{data.FileExtension}}">
+                                                                <button class="file-download mx-1"><i
+                                                                        class="fa fa-download"></i></button>
+                                                            </form>
+                                                            <div class="file-man-title">
+                                                                <h5 class="mb-0 text-overflow">
+                                                                    {{data.FileName}}.{{data.FileExtension}}</h5>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if res.DocumentType == "20" %}
+                                    {% if Employee == True %}
+                                    <div class="accordion">
+                                        <div class="accordion-header bg-danger" role="button" data-toggle="collapse"
+                                            data-target="#panel-body-3" aria-expanded="true">
+                                            <h4>
+                                                <span class="accordion-icon"><i class="fas fa-plus"></i></span>
+                                                Upcoming {{Department}} Leave Plans
+                                            </h4>
+                                        </div>
+                                        <div class="accordion-body collapse show" id="panel-body-3"
+                                            data-parent="#accordion">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped data-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Application Date</th>
+                                                            <th>Leave Type</th>
+                                                            <th>Start Date</th>
+                                                            <th>Resumption Date</th>
+                                                            <th>Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for res in department_leave %}
+                                                        <tr id="row{{res.Application_No}}">
+                                                            <td id="Rejected_Application_Date{{res.Application_No}}">
+                                                                {{res.Application_Date}}</td>
+                                                            <td>{{res.Leave_Code}}</td>
+                                                            <td id="Rejected_Start_Date{{res.Application_No}}">
+                                                                {{res.Start_Date}}
+                                                            </td>
+                                                            <td id="Rejected_End_Date{{res.Application_No}}">
+                                                                {{res.Resumption_Date}}
+                                                            </td>
+                                                            <td>
+                                                                <div class="badge badge-success">{{res.Status}}</div>
+                                                            </td>
+                                                        </tr>
+                                                        <script>
+                                                            $(document).ready(function () {
+                                                                // Get the current date
+                                                                var currentDate = new Date();
+                                                                var startDate = new Date('{{res.Start_Date}}');
+                                                                var resumptionDate = new Date(
+                                                                    '{{res.Resumption_Date}}');
+
+                                                                // Check if Start_Date has passed and Resumption_Date has not passed
+                                                                if (currentDate > startDate && currentDate <=
+                                                                    resumptionDate) {
+                                                                    $("#row{{res.Application_No}}").css(
+                                                                        "background-color",
+                                                                        "yellow");
+                                                                }
+
+                                                                $("#Rejected_Application_Date{{res.Application_No}}")
+                                                                    .empty().append(moment(
+                                                                            '{{res.Application_Date}}',
+                                                                            "YYYY-MM-DD")
+                                                                        .format('Do MMM YYYY'));
+                                                                $("#Rejected_Start_Date{{res.Application_No}}")
+                                                                    .empty().append(moment('{{res.Start_Date}}',
+                                                                            "YYYY-MM-DD")
+                                                                        .format('Do MMM YYYY'));
+                                                                $("#Rejected_End_Date{{res.Application_No}}")
+                                                                    .empty().append(moment(
+                                                                            '{{res.Resumption_Date}}',
+                                                                            "YYYY-MM-DD")
+                                                                        .format('Do MMM YYYY'));
+                                                            })
+                                                        </script>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if Relievers|length > 0 %}
+                                    <div class="accordion">
+                                        <div class="accordion-header bg-danger" role="button" data-toggle="collapse"
+                                            data-target="#panel-body-4" aria-expanded="true">
+                                            <h4>
+                                                <span class="accordion-icon"><i class="fas fa-plus"></i></span>
+                                                Reliever
+                                            </h4>
+                                        </div>
+                                        <div class="accordion-body collapse show" id="panel-body-4"
+                                            data-parent="#accordion">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped data-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>
+                                                                Leave Code
+                                                            </th>
+                                                            <th>Staff No</th>
+                                                            <th>Staff Name</th>
+                                                            <th>Section</th>
+                                                            {% if res.Status == "Open" %}
+                                                            <th>Action</th>
+                                                            {% endif %}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for line in Relievers %}
+                                                        <tr>
+                                                            <td>{{line.LeaveCode}}</td>
+                                                            <td>{{line.StaffNo}}</td>
+                                                            <td>{{line.StaffName}}</td>
+                                                            <td>{{line.ShortcutDimension1Code}}</td>
+                                                            {% if res.Status == "Open" %}
+                                                            <td>
+
+                                                            </td>
+                                                            {% endif %}
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% endif %}
+                                    {% if res.DocumentType == "18" %}
+                                    <div class="accordion">
+                                        <div class="accordion-header bg-danger" role="button" data-toggle="collapse"
+                                            data-target="#panel-body-6" aria-expanded="true">
+                                            <h4>
+                                                <span class="accordion-icon"><i class="fas fa-plus"></i></span>
+                                                Adjustment Lines
+                                            </h4>
+                                        </div>
+                                        <div class="accordion-body collapse show" id="panel-body-6"
+                                            data-parent="#accordion">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped data-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Name</th>
+                                                            <th>Leave Type</th>
+                                                            <th>Adjustment Entry Type</th>
+                                                            <th>New Entitlement</th>
+                                                            <th>Transaction Type</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for line in adjustmentLine %}
+                                                        <tr>
+                                                            <td>{{line.EmployeeName}}</td>
+                                                            <td>{{line.LeaveCode}}</td>
+                                                            <td>{{line.LeaveAdjEntryType}} </td>
+                                                            <td>{{line.NewEntitlement}}</td>
+                                                            <td>{{line.TransactionType}} </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% if res.Status == "Open" %}
+                        <div class="row my-3">
+                            <div class="col-md-12 button-container d-flex justify-content-center">
+                                {% if res.DocumentType == "20" %}
+                                {% if Relievers|length == 0 %}
+                                <button type="button" class="btn btn-info" data-toggle="modal"
+                                    data-target="#modify_reliever">
+                                    Add Reliever
+                                </button>
+                                {% endif %}
+                                {% endif %}
+                                <form action="{% url 'FnActionApprovals' res.DocumentNo  %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="tableID" value="{{res.TableID}}">
+                                    <input type="hidden" name="entryNo" value="{{res.Entry_No_}}">
+                                    <input type="hidden" name="statusApproveRejectDelegate" value="Approve">
+                                    <input type="hidden" name="approvalComment" value="">
+
+                                    <button type="submit" class="btn btn-danger">
+                                        Approve {% if res.DocumentType == "20" %} Leave Application
+                                        {% elif res.DocumentType == "18" %} Leave Adjustment
+                                        {% elif res.DocumentType == "25" %} Leave Recall {% endif %}
+                                    </button>
+                                </form>
+                                <button type="button" class="btn btn-dark" data-toggle="modal"
+                                    data-target="#reject_docs">
+                                    Reject {% if res.DocumentType == "20" %} Leave Application
+                                    {% elif res.DocumentType == "18" %} Leave Adjustment
+                                    {% elif res.DocumentType == "25" %} Leave Recall {% endif %} Approval
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" tabindex="-1" role="dialog" id="reject_docs">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reject Approval ({{res.DocumentNo}})</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'FnActionApprovals' res.DocumentNo  %}" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="tableID" value="{{res.TableID}}">
+                        <input type="hidden" name="entryNo" value="{{res.Entry_No_}}">
+                        <input type="hidden" name="statusApproveRejectDelegate" value="Reject">
+                        <div class="form-group">
+                            <label>Reason</label>
+                            <textarea class="form-control" name="approvalComment" required></textarea>
+                        </div>
+                        <div class="form-group my-2">
+                            <button type="submit" class="btn btn-primary btn-lg btn-block">
+                                Reject
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="modify_reliever">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modify Reliever</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'ApprovalLeaveReliever' res.DocumentNo %}" novalidate>
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>Reliever</label>
+                            <select class="form-control select2" name="Reliever" required>
+                                <option selected disabled value="0">--Select Reliever--</option>
+                                {% for Reliever in relievers %}
+                                <option value="{{Reliever.No_}}">{{Reliever.First_Name}} {{Reliever.Last_Name}}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group my-2">
+                            <button type="submit" class="btn btn-primary btn-lg btn-block">
+                                Reject
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    $(document).ready(function () {
+        var EndDate = '{{res.Due_Date}}';
+        $("#EndDate")
+            .empty().append(moment(
+                    EndDate,
+                    "YYYY-MM-DD")
+                .format(
+                    'Do MMM YYYY'));
+    })
+</script>
+{% endblock %}

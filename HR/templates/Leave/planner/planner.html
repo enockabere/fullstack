@@ -1,0 +1,438 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+Leave Request
+{% endblock %}
+
+{% block main %}
+<section class="section">
+    {% include 'alerts.html' %}
+    <div class="section-header">
+        <h1>New Leave Plan <i class="fas fa-edit inside-icon"></i></h1>
+        <div class="section-header-breadcrumb">
+            <div class="breadcrumb-item active"><a href="{% url 'dashboard' %}">Dashboard</a></div>
+            <div class="breadcrumb-item">New Leave Plan</div>
+        </div>
+    </div>
+    <div class="section-body bg-white p-2">
+        <div class="row my-2">
+            <div class="col-md-12">
+                <div
+                    class="steps d-flex flex-wrap flex-sm-nowrap justify-content-between padding-top-2x padding-bottom-1x">
+                    <div class="step completed">
+                        <div class="step-icon-wrap">
+                            <div class="step-icon">
+                                <i class="las la-check"></i>
+                            </div>
+                        </div>
+                        <h4 class="step-title">New Plan</h4>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon-wrap">
+                            <div class="step-icon">
+                                <i class="las la-clipboard-list"></i>
+                            </div>
+                        </div>
+                        <h4 class="step-title">Planner Lines</h4>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon-wrap">
+                            <div class="step-icon">
+                                <i class="las la-check-circle"></i>
+                            </div>
+                        </div>
+                        <h4 class="step-title">Submitted</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="money-spinner mx-auto text-center" id="header-spinner" style="display: none;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif" alt="Loading Gif"
+                style="height: 100px;" class="img-fluid">
+        </div>
+        <div class="row" id="header_step">
+            <div class="col-md-12">
+                <div class="card-body">
+                    <form method="POST" id="planner_header" novalidate class="py-5">
+                        {% csrf_token %}
+                        <input type="hidden" name="plannerNo" id="plannerNo" value="">
+                        <input type="hidden" name="myAction" id="myAction" value="insert">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary btn-lg btn-block">
+                                    <i class="las la-plus"></i> Create New Plan
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="row" id="lines_step" style="display: none;">
+            <div class="col-md-12">
+                <div class="card-body">
+                    <form method="POST" action="" novalidate class="" id="linesForm" enctype="multipart/form-data">
+                        <input type="hidden" name="lineNo" id="lineNo" value="0">
+                        <input type="hidden" name="linesMyAction" id="linesMyAction" value="insert">
+                        {% csrf_token %}
+                        <div class="col-md-12">
+                            <h2 class="section-title">Planner Lines</h2>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-4">
+                                <label for="frist_name">Start Date: <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" name="startDate" id="startDate" autofocus
+                                    required>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="frist_name">End Date: <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" name="endDate" id="endDate" autofocus required>
+                            </div>
+                            <div class="form-group col-4">
+                                <button type="submit" class="btn btn-warning mt-4 btn-lg btn-block">
+                                    Save Lines
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="table-responsive my-3">
+                        <table class="table table-striped" id="lines_table">
+                            <thead>
+                                <tr>
+                                    <th>Leave Period </th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Days</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        <style>
+                            .button-container {
+                                display: flex;
+                            }
+
+                            .button-container>button {
+                                margin-right: 10px;
+                                /* Adjust this value to control the space between buttons */
+                            }
+
+                            /* Adjust the margin-right for the last button to remove the extra space */
+                            .button-container>button:last-child {
+                                margin-right: 0;
+                            }
+                        </style>
+
+                        <div class="col-md-12 button-container d-flex justify-content-center pb-5">
+                            <form method="post" id="planner_submit">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    Submit Plan <i class="las la-arrow-right"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</section>
+<script>
+    $(document).ready(function () {
+        var headerCode = "0";
+
+        const $next_one = $('#next_one');
+        const $header_step = $('#header_step');
+        const $lines_step = $('#lines_step');
+        const $attachment_next = $('#attachment_next');
+        const $application_submit = $('#application_submit');
+        const $headerForm = $("#planner_header");
+        const $header_spinner = $("#header-spinner");
+        const $linesForm = $("#linesForm");
+        const $startDateInput = $("#startDate");
+        const $endDateInput = $("#endDate");
+        const $approvalForm = $("#planner_submit");
+
+        const currentDate = new Date().toISOString().split('T')[0];
+        $startDateInput.attr('min', currentDate);
+
+        $startDateInput.on('input', function () {
+            $endDateInput.attr('min', $startDateInput.val());
+        });
+
+        $headerForm.on("submit", (e) => {
+            e.preventDefault();
+            $header_spinner.show();
+            $.ajax({
+                type: "POST",
+                url: "/selfservice/LeavePlanner/",
+                data: {
+                    plannerNo: $("#plannerNo").val(),
+                    myAction: $("#myAction").val(),
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+                },
+                success: function (response) {
+                    $header_spinner.hide();
+                    if (response["response"]) {
+                        iziToast.show({
+                            theme: "dark",
+                            backgroundColor: "#239B56",
+                            icon: "las la-check-circle",
+                            title: "Plan" +
+                                " " +
+                                response["response"] +
+                                " " +
+                                "created successfully",
+                            position: "topRight",
+                            progressBarColor: "#F4F6F7",
+                        });
+
+                        headerCode = response["response"];
+                        $header_step.hide();
+                        $lines_step.show();
+
+                    } else if (response["error"]) {
+                        iziToast.show({
+                            theme: "dark",
+                            icon: "las la-exclamation",
+                            title: "Error",
+                            message: response["error"],
+                            position: "topRight",
+                            progressBarColor: "#ff0800",
+                        });
+                    }
+                },
+                error: function (error) {
+                    console.log(error);
+                    $header_spinner.hide();
+                },
+            });
+        });
+
+        $linesForm.on("submit", (e) => {
+            e.preventDefault();
+            if (
+                $startDateInput.val() === "" ||
+                $endDateInput.val() === ""
+            ) {
+                alert("Please fill in all required fields.");
+                return false;
+            }
+            $header_spinner.show();
+            $.ajax({
+                type: "POST",
+                url: "/selfservice/FnLeavePlannerLine/" + headerCode + "/",
+                data: {
+                    lineNo: $("#lineNo").val(),
+                    startDate: $startDateInput.val(),
+                    endDate: $("#endDate").val(),
+                    myAction: $("#linesMyAction").val(),
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+                },
+                success: function (response) {
+                    $header_spinner.hide();
+                    Lines_Data(headerCode);
+                    if (response["response"]) {
+                        iziToast.show({
+                            theme: "dark",
+                            backgroundColor: "#239B56",
+                            icon: "las la-check-circle",
+                            title: response["response"],
+                            position: "topRight",
+                            progressBarColor: "#F4F6F7",
+                        });
+
+                    } else if (response["error"]) {
+                        iziToast.show({
+                            theme: "dark",
+                            icon: "las la-exclamation",
+                            title: "Error",
+                            message: response["error"],
+                            position: "topRight",
+                            progressBarColor: "#ff0800",
+                        });
+                    }
+                },
+                error: function (error) {
+                    console.log(error);
+                    $header_spinner.hide();
+                },
+            });
+        });
+
+        function Lines_Data(pk) {
+            $.ajax({
+                url: "/selfservice/FnLeavePlannerLine/" + pk + "/",
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    var linesTableBody = $('#lines_table tbody');
+                    linesTableBody.empty();
+                    for (var i = 0; i < data.length; i++) {
+
+                        var LeavePeriod = data[i].LeavePeriod;
+                        var StartDate = data[i].StartDate;
+                        var EndDate = data[i].EndDate;
+                        var Days = data[i].Days;
+                        var LineNo = data[i].LineNo;
+                        var DocumentNo = data[i].DocumentNo;
+
+                        var row = $('<tr>');
+                        row.append($('<td>').text(LeavePeriod));
+                        row.append($('<td>').text(StartDate));
+                        row.append($('<td>').text(EndDate));
+                        row.append($('<td>').text(Days));
+
+                        var form = $('<form>').attr({
+                            method: 'POST',
+                            action: "/selfservice/FnLeavePlannerLine/" + DocumentNo + "/"
+                        }).append('{% csrf_token %}');
+
+                        var e_LineNo = $('<input>').attr({
+                            type: 'hidden',
+                            name: 'lineNo',
+                            value: LineNo
+                        });
+                        var e_startDate = $('<input>').attr({
+                            type: 'hidden',
+                            name: 'startDate',
+                            value: StartDate
+                        });
+                        var e_endDate = $('<input>').attr({
+                            type: 'hidden',
+                            name: 'endDate',
+                            value: EndDate
+                        });
+
+                        var e_myAction = $('<input>').attr({
+                            type: 'hidden',
+                            name: 'myAction',
+                            value: "delete"
+                        });
+                        var e_submitBtn = $('<button>').attr({
+                            type: 'submit',
+                            class: 'btn btn-danger'
+                        }).text('delete');
+                        // Handle form submission
+                        form.submit(function (event) {
+                            event.preventDefault();
+                            $header_spinner.show();
+                            $.ajax({
+                                url: form.attr('action'),
+                                type: form.attr('method'),
+                                data: form.serialize(),
+                                success: function (data) {
+                                    $header_spinner.hide();
+                                    if (data["response"]) {
+                                        iziToast.show({
+                                            theme: "dark",
+                                            backgroundColor: "#239B56",
+                                            icon: "las la-check-circle",
+                                            title: data[
+                                                "response"],
+                                            position: "topRight",
+                                            progressBarColor: "#F4F6F7",
+                                        });
+                                        $header_spinner.hide();
+                                        Lines_Data(headerCode);
+                                    } else if (data["error"]) {
+                                        iziToast.show({
+                                            theme: "dark",
+                                            icon: "las la-exclamation",
+                                            title: "Error",
+                                            message: data["error"],
+                                            position: "topRight",
+                                            progressBarColor: "#ff0800",
+                                        });
+                                        $header_spinner.hide();
+                                    }
+                                },
+                                error: function (xhr, status, error) {
+                                    $header_spinner.hide();
+                                    console.log('Error:', error);
+                                }
+                            });
+                        });
+                        var td = $('<td>').append(form.append(e_LineNo, e_startDate, e_endDate,
+                            e_myAction, e_submitBtn));
+                        row.append(td);
+                        linesTableBody.append(row);
+                    }
+                    // initialize DataTables for each table
+                    if (!$.fn.DataTable.isDataTable('#lines_table')) {
+                        $('#lines_table').DataTable({
+                            "pageLength": 5,
+                            "order": [
+                                [0, "desc"]
+                            ]
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error:", error);
+                },
+            });
+        }
+
+        $approvalForm.on("submit", (e) => {
+            e.preventDefault();
+            $header_spinner.show(200);
+            $.ajax({
+                type: "POST",
+                url: "/selfservice/FnSubmitLeavePlanner/" + headerCode + "/",
+                data: {
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+                },
+                success: function (data) {
+                    $header_spinner.hide();
+
+                    if (data["success"] == true) {
+                        iziToast.show({
+                            theme: "dark",
+                            backgroundColor: "#239B56",
+                            icon: "las la-check-circle",
+                            title: data["message"],
+                            position: "topRight",
+                            progressBarColor: "#F4F6F7",
+                        });
+                        window.location.href = "/selfservice/Plans";
+                    } else {
+                        iziToast.show({
+                            theme: "dark",
+                            icon: "las la-exclamation",
+                            title: "Error",
+                            message: data["error"],
+                            position: "topRight",
+                            progressBarColor: "#ff0800",
+                        });
+                    }
+                },
+                error: function (error) {
+                    console.log(error);
+                    $header_spinner.hide();
+                },
+            });
+        });
+
+        $next_one.click(function (event) {
+            event.preventDefault();
+            $header_step.hide();
+            $lines_step.show();
+
+        })
+
+    });
+</script>
+{% endblock %}

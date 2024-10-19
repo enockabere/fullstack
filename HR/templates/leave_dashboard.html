@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+LEAVE DASHBOARD
+{% endblock %}
+{% block head %}
+<script src="{% static 'plugins/assets/modules/chart.min.js' %}"></script>
+{% endblock %}
+
+
+{% block main %}
+<section class="section">
+    {% include 'alerts.html' %}
+    <div class="section-header">
+        <h1><span style="text-transform: capitalize;">{% if Department != "None"%} {{Department}} {% endif %}</span>
+            Leave Dashboard <i class="las la-grip-horizontal inside-icon"></i></h1>
+        <div class="section-header-breadcrumb">
+            <div class="breadcrumb-item active"><a href="{% url 'dashboard' %}">Dashboard</a></div>
+            <div class="breadcrumb-item">Leave Dashboard</div>
+        </div>
+    </div>
+    {% if Department == "None" %}
+    <div class="alert alert-danger text-dark alert-dismissible show fade">
+        <div class="alert-body">
+            <button class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+            Leave dashboard may not have any statistics because <strong> {{username}}</strong> is not assigned to a
+            specific
+            department.
+        </div>
+    </div>
+    {% endif %}
+    <div class="section-body">
+        <div class="row g-1">
+            <div class="col-md-4">
+                <div class="card-box bg-blue h-100">
+                    <div class="inner">
+                        <h3> {{start_date_passed_leave|length}} </h3>
+                        <p> Absent Today</p>
+
+                        <p class="text-small">( Employees in <span
+                                style="text-transform: lowercase;">{% if Department != "None"%} {{Department}}
+                                {% endif %}</span> department who are on leave)
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-box bg-warning h-100">
+                    <div class="inner">
+                        <h3> {{planned_department_leave|length}} </h3>
+                        <p> Planned Leaves </p>
+
+                        <p class="text-small">( Leave requests systematically created using the leave planner
+                            tool ) </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-box bg-green h-100">
+                    <div class="inner">
+                        <h3> {{un_planned_department_leave|length}} </h3>
+                        <p> Unplanned Leaves</p>
+
+                        <p class="text-small">( Leave requests that are initiated without utilizing the leave planner
+                            tool ) </p>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <h2 class="section-title mx-3">All Upcoming Leaves
+                    </h2>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Employee Name</th>
+                                        <th>Application Date</th>
+                                        <th>Leave Type</th>
+                                        <th>Start Date</th>
+                                        <th>Resumption Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for res in department_leave %}
+                                    <tr id="row{{res.Application_No}}">
+                                        <td class="text-center">{{res.Employee_Name}}</td>
+                                        <td id="Rejected_Application_Date{{res.Application_No}}">
+                                            {{res.Application_Date}}</td>
+                                        <td>{{res.Leave_Code}}</td>
+                                        <td id="Rejected_Start_Date{{res.Application_No}}">{{res.Start_Date}}
+                                        </td>
+                                        <td id="Rejected_End_Date{{res.Application_No}}">{{res.Resumption_Date}}
+                                        </td>
+                                        <td>
+                                            <div class="badge badge-info">{{res.Status}}</div>
+                                        </td>
+                                    </tr>
+                                    <script>
+                                        $(document).ready(function () {
+                                            // Get the current date
+                                            var currentDate = new Date();
+                                            var startDate = new Date('{{res.Start_Date}}');
+                                            var resumptionDate = new Date('{{res.Resumption_Date}}');
+
+                                            // Check if Start_Date has passed and Resumption_Date has not passed
+                                            if (currentDate > startDate && currentDate <= resumptionDate) {
+                                                $("#row{{res.Application_No}}").css({
+                                                    "background-color": "grey",
+                                                    "color": "white"
+                                                });
+
+                                            }
+
+                                            $("#Rejected_Application_Date{{res.Application_No}}")
+                                                .empty().append(moment('{{res.Application_Date}}', "YYYY-MM-DD")
+                                                    .format('Do MMM YYYY'));
+                                            $("#Rejected_Start_Date{{res.Application_No}}")
+                                                .empty().append(moment('{{res.Start_Date}}', "YYYY-MM-DD")
+                                                    .format('Do MMM YYYY'));
+                                            $("#Rejected_End_Date{{res.Application_No}}")
+                                                .empty().append(moment('{{res.Resumption_Date}}', "YYYY-MM-DD")
+                                                    .format('Do MMM YYYY'));
+                                        })
+                                    </script>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</section>
+<script>
+    $(document).ready(function () {
+        $('.tab-panes').not('.active').hide();
+        const $headerTitle = $('.headerTitle');
+        var open_total = '{{total_open}}';
+        var submitted_total = '{{total_submitted}}';
+        var cardCount = $('#card-container').children().length;
+        console.log(cardCount)
+        if (cardCount == 1) {
+            $('.dynamic').removeClass('col-md-3');
+            $('.dynamic').addClass('col-md-12');
+        } else if (cardCount == 2) {
+            $('.dynamic').removeClass('col-md-3');
+            $('.dynamic').addClass('col-md-6');
+        } else if (cardCount == 3) {
+            $('.dynamic').removeClass('col-md-3');
+            $('.dynamic').addClass('col-md-4');
+        } else {
+            $('.dynamic').addClass('col-md-3');
+        }
+        $('#new-tab').click(function () {
+            $('#new-content').show(1000);
+            $('#submitted-content').hide(800);
+            $headerTitle.empty().append('New Procurement Requests' + ' ' + '(' + open_total + ')');
+
+        });
+        $('#submitted-tab').click(function () {
+            $('#new-content').hide(800);
+            $('#submitted-content').show(1000);
+            $headerTitle.empty().append('My Submissions' + ' ' + '(' + submitted_total + ')');
+        });
+        if (!$.fn.DataTable.isDataTable('#open_table')) {
+            $('#open_table').DataTable({
+                "pageLength": 5,
+                "order": [
+                    [0, "desc"]
+                ]
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+Leave Request
+{% endblock %}
+{% block main %}
+<section class="section">
+    {% include 'alerts.html' %}
+    <div class="section-header">
+        <h1>New Leave Request <i class="fas fa-folder-open inside-icon"></i></h1>
+        <div class="section-header-breadcrumb">
+            <div class="breadcrumb-item active"><a href="{% url 'dashboard' %}">Dashboard</a></div>
+            <div class="breadcrumb-item">New Leave Request</div>
+        </div>
+    </div>
+    <div class="section-body bg-white p-2">
+        <div class="row my-4">
+            <div class="col-md-12">
+                <div
+                    class="steps d-flex flex-wrap flex-sm-nowrap justify-content-between padding-top-2x padding-bottom-1x">
+                    <div class="step completed">
+                        <div class="step-icon-wrap">
+                            <div class="step-icon">
+                                <i class="las la-check"></i>
+                            </div>
+                        </div>
+                        <h4 class="step-title">Leave Application Form</h4>
+                    </div>
+                    <div class="step attach_step">
+                        <div class="step-icon-wrap">
+                            <div class="step-icon">
+                                <i class="la la-cloud"></i>
+                            </div>
+                        </div>
+                        <h4 class="step-title">Reliever/Attach/Submit</h4>
+                    </div>
+                    <div class="step submitted_step">
+                        <div class="step-icon-wrap">
+                            <div class="step-icon">
+                                <i class="las la-check-circle"></i>
+                            </div>
+                        </div>
+                        <h4 class="step-title">Submitted</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="money-spinner mx-auto text-center" id="header-spinner" style="display: none;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif" alt="Loading Gif"
+                style="height: 100px;" class="img-fluid">
+        </div>
+        <div class="row" id="header_step">
+            <div class="col-md-12">
+                <div class="card-body">
+                    <form method="POST" id="headerForm" novalidate class="">
+                        {% csrf_token %}
+                        <input type="hidden" name="applicationNo" id="applicationNo" value="">
+                        <input type="hidden" name="myAction" id="myAction" value="insert">
+                        <div class="row">
+                            <div class="form-group col-md-4">
+                                <label>Leave Type<span class="text-danger">*</span></label>
+                                <select class="form-control select2" name="leaveType" id="leaveType" required>
+                                    <option selected disabled value="0">--Select Leave Type--</option>
+                                    {% for res in leave %}
+                                    <option value="{{res.Code}}">{{res.Description}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Leave Balance</label>
+                                    <input type="text" class="form-control" id="leaveBalance" placeholder="0" disabled>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label class="form-label"> Leave Based on Planner? <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-control" id="BasedOnPlanner" name="BasedOnPlanner" required>
+                                    <option value="True">Yes</option>
+                                    <option value="False" selected>No</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-md-4" id="startDateCol">
+                                <label for="frist_name">Leave Start Date</label>
+                                <input type="date" class="form-control" name="plannerStartDate" id="start-date"
+                                    autofocus>
+                            </div>
+                            <div class="form-group col-md-4" id="planner_col" style="display: none;">
+                                <label class="form-label"> Planner Start Date</label>
+                                <select class="form-control" id="plannerStartDate" disabled>
+                                    <option value="0" disabled selected>--Select--</option>
+                                    {% for res in plan %}
+                                    <option value="{{res.StartDate}}">{{res.StartDate}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="last_name">Return Same Day <span class="text-danger">*</span></label>
+                                <select class="form-control select2" id="isReturnSameDay" name="isReturnSameDay"
+                                    required>
+                                    <option value="0" disabled selected>--Select Option--</option>
+                                    <option value="True">Yes</option>
+                                    <option value="False">No</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4" id="daysAppliedCol">
+                                <div class="form-group">
+                                    <label>Days Applied</label>
+                                    <input type="text" class="form-control" id="daysApplied" name="daysApplied"
+                                        disabled>
+                                </div>
+                            </div>
+                            <div class="col-md-4" id="whichHalfOfDayCol" style="display:none;">
+                                <div class="form-group">
+                                    <label>Half Day Leave Application</label>
+                                    <select class="form-control select2" id="whichHalfOfDay" name="whichHalfOfDay"
+                                        disabled>
+                                        <option value="0" disabled selected>--Select--</option>
+                                        <option value="1">First half of the day</option>
+                                        <option value="2">First half of the day</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary btn-lg btn-block">
+                                    Save Application
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-lg btn-block" id="next_one" hidden>
+                                    Next Step <i class="las la-angle-double-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div id="attachments_step" style="display: none;">
+            <div class="row m-2 w-100" id="attachments_container">
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <form id="reliever_form" method="post" novalidate>
+                                    {% csrf_token %}
+                                    <h2 class="section-title">Leave Reliever</h2>
+                                    <input type="hidden" name="myAction" id="reliever_action" value="insert">
+                                    <div class="row">
+                                        <div class="form-group col-12">
+                                            <label>Reliever</label>
+                                            <select class="form-control select2" name="Reliever" id="Reliever" required>
+                                                <option value="" selected disabled>--Select Reliever--</option>
+                                                {% for Reliever in Reliever %}
+                                                <option value="{{Reliever.No_}}">{{Reliever.First_Name}}
+                                                    {{Reliever.Last_Name}}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                            <button type="submit" class="btn btn-primary btn-lg btn-block my-2">
+                                                <i class="las la-plus"></i> Add Reliever
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                                <table class="table table-striped" id="relievers_table">
+                                    <thead>
+                                        <tr>
+                                            <th>Leave Code</th>
+                                            <th>Staff No</th>
+                                            <th>Staff Name</th>
+                                            <th>Section</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <style>
+                                .button-container {
+                                    display: flex;
+                                }
+
+                                .button-container>button {
+                                    margin-right: 10px;
+                                    /* Adjust this value to control the space between buttons */
+                                }
+
+                                /* Adjust the margin-right for the last button to remove the extra space */
+                                .button-container>button:last-child {
+                                    margin-right: 0;
+                                }
+                            </style>
+
+                            <div class="col-md-12 button-container d-flex justify-content-center pb-5">
+                                <button type="button" class="btn btn-dark btn-lg" id="Attachment_Prev">
+                                    <i class="las la-angle-double-left"></i> Previous Step
+                                </button>
+                                <button type="button" class="btn btn-warning btn-lg" id="Attachment_Toggle">
+                                    Upload Attachment <i class="las la-upload"></i>
+                                </button>
+                                <form method="post" id="application_submit">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        Submit Application <i class="las la-arrow-right"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <form method="POST" class="pb-4" novalidate class="" id="leave_attachment_form"
+                            enctype="multipart/form-data" style="display: none;">
+                            {% csrf_token %}
+                            <input type="hidden" name="prospNo" value="">
+                            <div class="row">
+                                <div class="form-group col-6">
+                                    <label>Attachments</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <div class="input-group-text">
+                                                <i class="fas fa-file"></i>
+                                            </div>
+                                        </div>
+                                        <input type="file" class="form-control" name="attachments" id="attachments" />
+                                    </div>
+                                </div>
+                                <div class="form-group col-4 mt-4">
+                                    <button type="submit" class="btn btn-warning btn-lg btn-block">
+                                        Upload
+                                    </button>
+                                </div>
+                                <div class="form-group col-2 mt-4">
+                                    <button type="button" id="attachment_next" class="btn btn-primary btn-lg btn-block">
+                                        Next <i class="las la-long-arrow-alt-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="padding-bottom: 5rem;display: none;" id="Approvers_Data_Step">
+            <div class="col-12">
+                <div class="card">
+                    <h2 class="section-title mx-3">Leave Approvers
+                    </h2>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped" id="approvers_table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Sequence</th>
+                                        <th>Status</th>
+                                        <th>Modified By</th>
+                                        <th>Modified Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="button-container d-flex justify-content-center pb-5">
+                            <button type="button" class="btn btn-dark btn-lg" id="Approval_Prev">
+                                <i class="las la-angle-double-left"></i> Previous Step
+                            </button>
+                            <form action="" method="post" id="application_cancel">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    Cancel Approval Request <i class="las la-times"></i>
+                                </button>
+                            </form>
+                            <a href="{% url 'Applications' %}" type="button"
+                                class="btn ml-2 btn-warning btn-lg text white">
+                                <i class="las la-angle-double-left"></i> <i class="las la-eye"></i> My Leave
+                                Applications
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script src="{% static 'js/request/leave/leave.js' %}"></script>
+{% endblock %}
